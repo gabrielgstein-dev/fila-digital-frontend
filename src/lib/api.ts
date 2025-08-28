@@ -7,8 +7,9 @@ import {
   LoginDto,
   AuthResponse,
 } from '@/types';
+import { env } from '@/config/env';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = env.API_URL;
 
 class ApiClient {
   private baseURL: string;
@@ -28,6 +29,13 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     
+    console.log('🌐 API Request:', {
+      method: options.method || 'GET',
+      url,
+      headers: options.headers,
+      body: options.body ? 'Presente' : 'Ausente'
+    })
+    
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
@@ -43,14 +51,23 @@ class ApiClient {
         headers,
       });
 
+      console.log('🌐 API Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      })
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('❌ API Error Response:', errorData)
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log('✅ API Success Response:', data)
+      return data;
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error('❌ API Request failed:', error);
       throw error;
     }
   }
@@ -70,13 +87,28 @@ class ApiClient {
   }
 
   async login(credentials: LoginDto): Promise<AuthResponse> {
-    const response = await this.request<AuthResponse>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    });
+    console.log('🌐 API: Iniciando login para CPF:', credentials.cpf)
+    console.log('🌐 API: URL base:', this.baseURL)
+    console.log('🌐 API: Endpoint completo:', `${this.baseURL}/auth/login`)
     
-    this.setToken(response.access_token);
-    return response;
+    try {
+      const response = await this.request<AuthResponse>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
+      
+      console.log('✅ API: Login bem-sucedido:', {
+        accessToken: response.access_token ? 'Presente' : 'Ausente',
+        userId: response.user?.id,
+        userName: response.user?.name
+      })
+      
+      this.setToken(response.access_token);
+      return response;
+    } catch (error) {
+      console.error('❌ API: Erro no login:', error)
+      throw error
+    }
   }
 
   async logout(): Promise<void> {

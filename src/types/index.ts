@@ -135,7 +135,7 @@ export interface CreateTicketDto {
 }
 
 export interface LoginDto {
-  email: string;
+  cpf: string;
   password: string;
 }
 
