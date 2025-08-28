@@ -19,11 +19,29 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production  # Requer aprovação/permissão
+    environment: production # Requer aprovação/permissão
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Set default environment variables
+      run: |
+        if [ -z "$GCP_PROJECT_ID" ]; then
+          echo "GCP_PROJECT_ID not set, using default"
+          echo "GCP_PROJECT_ID=fila-backoffice-prod" >> $GITHUB_ENV
+        fi
+        if [ -z "$GCP_REGION" ]; then
+          echo "GCP_REGION not set, using default"
+          echo "GCP_REGION=us-central1" >> $GITHUB_ENV
+        fi
+        if [ -z "$SERVICE_NAME" ]; then
+          echo "SERVICE_NAME not set, using default"
+          echo "SERVICE_NAME=fila-backoffice" >> $GITHUB_ENV
+        fi
+        echo "Using GCP_PROJECT_ID: $GCP_PROJECT_ID"
+        echo "Using GCP_REGION: $GCP_REGION"
+        echo "Using SERVICE_NAME: $SERVICE_NAME"
 
     - name: Extract version from tag
       id: version_check
