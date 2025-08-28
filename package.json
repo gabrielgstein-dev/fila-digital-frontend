@@ -17,11 +17,11 @@
     "version:minor": "npm version minor --no-git-tag-version && npm run version:stage && npm run version:deploy",
     "version:major": "npm version major --no-git-tag-version && npm run version:stage && npm run version:deploy",
     "version:stage": "node -e \"const pkg = require('./package.json'); const [major, minor, patch] = pkg.version.split('.'); pkg.version = major + '.' + minor + '.' + patch + '-stage'; require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\\n');\"",
-    "version:deploy": "git add package.json && git commit -m \"chore: bump version to $(node -p \\\"require('./package.json').version\\\")\" && git tag $(node -p \\\"require('./package.json').version\\\") && git push origin main && git push origin $(node -p \\\"require('./package.json').version\\\")",
+    "version:deploy": "node scripts/version-deploy.js",
     "version:prod-patch": "npm version patch --no-git-tag-version && npm run version:prod-deploy",
     "version:prod-minor": "npm version minor --no-git-tag-version && npm run version:prod-deploy",
     "version:prod-major": "npm version major --no-git-tag-version && npm run version:prod-deploy",
-    "version:prod-deploy": "git add package.json && git commit -m \"chore: release version $(node -p \\\"require('./package.json').version\\\")\" && git tag $(node -p \\\"require('./package.json').version\\\") && git push origin main && git push origin $(node -p \\\"require('./package.json').version\\\")"
+    "version:prod-deploy": "node scripts/version-prod-deploy.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",
