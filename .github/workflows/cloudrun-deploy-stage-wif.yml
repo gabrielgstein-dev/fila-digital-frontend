@@ -1,4 +1,4 @@
-name: Deploy Frontend to Cloud Run (Staging)
+name: Deploy Frontend to Cloud Run (Staging) - WIF
 
 on:
   push:
@@ -78,7 +78,8 @@ jobs:
       if: steps.version_check.outputs.should_deploy == 'true'
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY_STAGE }}
+        workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+        service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
     - name: Setup Google Cloud CLI
       if: steps.version_check.outputs.should_deploy == 'true'
