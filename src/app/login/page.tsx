@@ -69,7 +69,7 @@ export default function LoginPage() {
       } else {
         router.push('/dashboard')
       }
-    } catch (error) {
+    } catch {
       setError('Erro ao fazer login. Tente novamente.')
     } finally {
       setIsLoading(false)

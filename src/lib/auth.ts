@@ -2,6 +2,7 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { apiClient } from './api'
 import { env } from '@/config/env'
+import { NextAuthUser, NextAuthSession, NextAuthJWT } from '@/types'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -57,22 +58,26 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role
-        token.tenantId = user.tenantId
-        token.tenant = user.tenant
-        token.accessToken = user.accessToken
-        token.userType = user.userType
+        const customUser = user as NextAuthUser
+        const customToken = token as unknown as NextAuthJWT
+        customToken.role = customUser.role
+        customToken.tenantId = customUser.tenantId
+        customToken.tenant = customUser.tenant
+        customToken.accessToken = customUser.accessToken
+        customToken.userType = customUser.userType
       }
       return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-        session.user.tenantId = token.tenantId as string
-        session.user.tenant = token.tenant as any
-        session.user.accessToken = token.accessToken as string
-        session.user.userType = token.userType as string
+      if (token && session.user) {
+        const customSession = session as unknown as NextAuthSession
+        const customToken = token as unknown as NextAuthJWT
+        customSession.user.id = customToken.id
+        customSession.user.role = customToken.role
+        customSession.user.tenantId = customToken.tenantId
+        customSession.user.tenant = customToken.tenant
+        customSession.user.accessToken = customToken.accessToken
+        customSession.user.userType = customToken.userType
       }
       return session
     },

@@ -148,4 +148,38 @@ export interface ApiResponse<T = unknown> {
   data: T;
   message?: string;
   success: boolean;
-} 
+}
+
+export interface NextAuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: AgentRole;
+  tenantId: string;
+  tenant: Tenant;
+  accessToken: string;
+  userType: string;
+}
+
+export interface NextAuthSession {
+  user: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    role: AgentRole;
+    tenantId: string;
+    tenant: Tenant;
+    accessToken: string;
+    userType: string;
+  };
+}
+
+export interface NextAuthJWT {
+  id: string;
+  role: AgentRole;
+  tenantId: string;
+  tenant: Tenant;
+  accessToken: string;
+  userType: string;
+}

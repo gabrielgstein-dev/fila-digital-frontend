@@ -1,12 +1,13 @@
 'use client'
 
-import { useSession, signOut } from 'next-auth/react'
+import { signOut } from 'next-auth/react'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { LogOut, Building2, User, Shield } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function DashboardPage() {
-  const { data: session } = useSession()
+  const { user } = useAuth()
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/login' })
@@ -54,7 +55,7 @@ export default function DashboardPage() {
                         Usuário
                       </p>
                       <p className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                        {session?.user?.name}
+                        {user?.name}
                       </p>
                     </div>
                   </div>
@@ -68,8 +69,8 @@ export default function DashboardPage() {
                         Função
                       </p>
                       <p className="text-lg font-semibold text-green-900 dark:text-green-100">
-                        {session?.user?.role === 'ADMIN' ? 'Administrador' : 
-                         session?.user?.role === 'MANAGER' ? 'Gerente' : 'Atendente'}
+                        {user?.role === 'ADMIN' ? 'Administrador' : 
+                         user?.role === 'MANAGER' ? 'Gerente' : 'Atendente'}
                       </p>
                     </div>
                   </div>
@@ -83,7 +84,7 @@ export default function DashboardPage() {
                         Empresa
                       </p>
                       <p className="text-lg font-semibold text-purple-900 dark:text-purple-100">
-                        {session?.user?.tenant?.name || 'N/A'}
+                        {user?.tenant?.name || 'N/A'}
                       </p>
                     </div>
                   </div>
