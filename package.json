@@ -1,6 +1,6 @@
 {
   "name": "fila-backoffice",
-  "version": "0.2.18-stage",
+  "version": "0.2.19-stage",
   "description": "Backoffice para sistema de fila digital",
   "private": true,
   "engines": {
