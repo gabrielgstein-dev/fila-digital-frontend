@@ -41,6 +41,15 @@ jobs:
         echo "Using GCP_PROJECT_ID: $GCP_PROJECT_ID"
         echo "Using GCP_REGION: $GCP_REGION"
         echo "Using SERVICE_NAME: $SERVICE_NAME"
+        
+        # Forçar definição das variáveis
+        export GCP_PROJECT_ID="${GCP_PROJECT_ID:-fila-digital-qa}"
+        export GCP_REGION="${GCP_REGION:-us-central1}"
+        export SERVICE_NAME="${SERVICE_NAME:-fila-frontend}"
+        
+        echo "Final GCP_PROJECT_ID: $GCP_PROJECT_ID"
+        echo "Final GCP_REGION: $GCP_REGION"
+        echo "Final SERVICE_NAME: $SERVICE_NAME"
 
     - name: Extract version from tag
       id: version_check
@@ -76,9 +85,42 @@ jobs:
         service_account_key: ${{ secrets.GCP_SA_KEY_STAGE }}
         project_id: ${{ secrets.GCP_PROJECT_ID_STAGE }}
 
+    - name: Configure project explicitly
+      if: steps.version_check.outputs.should_deploy == 'true'
+      run: |
+        echo "🔧 Configurando projeto explicitamente..."
+        gcloud config set project $GCP_PROJECT_ID
+        echo "✅ Projeto configurado: $(gcloud config get-value project)"
+
+    - name: Debug environment variables
+      if: steps.version_check.outputs.should_deploy == 'true'
+      run: |
+        echo "🔍 Debug das variáveis de ambiente:"
+        echo "GCP_PROJECT_ID: $GCP_PROJECT_ID"
+        echo "GCP_REGION: $GCP_REGION"
+        echo "SERVICE_NAME: $SERVICE_NAME"
+        echo "GOOGLE_APPLICATION_CREDENTIALS: $GOOGLE_APPLICATION_CREDENTIALS"
+        echo "CLOUDSDK_PROJECT: $CLOUDSDK_PROJECT"
+        echo ""
+        echo "🔍 Verificando autenticação:"
+        gcloud auth list
+        echo ""
+        echo "🔍 Verificando projeto configurado:"
+        gcloud config get-value project
+        echo ""
+        echo "🔍 Verificando repositórios disponíveis:"
+        gcloud artifacts repositories list --location=us
+
     - name: Configure Docker to use gcloud as a credential helper
       if: steps.version_check.outputs.should_deploy == 'true'
-      run: gcloud auth configure-docker
+      run: |
+        echo "🔧 Configurando Docker..."
+        gcloud auth configure-docker us-docker.pkg.dev
+        echo "✅ Docker configurado para us-docker.pkg.dev"
+        
+        # Verificar se o Docker está autenticado
+        echo "🔍 Verificando autenticação do Docker..."
+        docker login us-docker.pkg.dev
 
     - name: Build Docker image
       if: steps.version_check.outputs.should_deploy == 'true'
