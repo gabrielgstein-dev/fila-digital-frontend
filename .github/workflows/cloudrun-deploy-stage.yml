@@ -29,6 +29,11 @@ jobs:
         echo "🔧 Configurando variáveis de ambiente:"
         
         # Definir variáveis fixas
+        echo "GCP_PROJECT_ID=fila-digital-qa" >> $GITHUB_ENV
+        echo "GCP_REGION=us-central1" >> $GITHUB_ENV
+        echo "SERVICE_NAME=fila-frontend" >> $GITHUB_ENV
+        
+        # Exportar para uso imediato
         export GCP_PROJECT_ID="fila-digital-qa"
         export GCP_REGION="us-central1"
         export SERVICE_NAME="fila-frontend"

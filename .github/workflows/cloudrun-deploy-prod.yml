@@ -27,53 +27,22 @@ jobs:
 
     - name: Set default environment variables
       run: |
-        echo "🔍 Verificando variáveis iniciais:"
-        echo "GCP_PROJECT_ID inicial: $GCP_PROJECT_ID"
-        echo "GCP_REGION inicial: $GCP_REGION"
-        echo "SERVICE_NAME inicial: $SERVICE_NAME"
+        echo "🔧 Configurando variáveis de ambiente:"
         
-        # Definir variáveis com valores padrão se estiverem vazias
-        if [ -z "$GCP_PROJECT_ID" ] || [ "$GCP_PROJECT_ID" = "***" ]; then
-          echo "GCP_PROJECT_ID está vazio ou mascarado, definindo padrão"
-          echo "GCP_PROJECT_ID=fila-digital-qa" >> $GITHUB_ENV
-          export GCP_PROJECT_ID="fila-digital-qa"
-        fi
+        # Definir variáveis fixas
+        echo "GCP_PROJECT_ID=fila-digital-qa" >> $GITHUB_ENV
+        echo "GCP_REGION=us-central1" >> $GITHUB_ENV
+        echo "SERVICE_NAME=fila-frontend" >> $GITHUB_ENV
         
-        if [ -z "$GCP_REGION" ] || [ "$GCP_REGION" = "***" ]; then
-          echo "GCP_REGION está vazio ou mascarado, definindo padrão"
-          echo "GCP_REGION=us-central1" >> $GITHUB_ENV
-          export GCP_REGION="us-central1"
-        fi
+        # Exportar para uso imediato
+        export GCP_PROJECT_ID="fila-digital-qa"
+        export GCP_REGION="us-central1"
+        export SERVICE_NAME="fila-frontend"
         
-        if [ -z "$SERVICE_NAME" ] || [ "$SERVICE_NAME" = "***" ]; then
-          echo "SERVICE_NAME está vazio ou mascarado, definindo padrão"
-          echo "SERVICE_NAME=fila-frontend" >> $GITHUB_ENV
-          export SERVICE_NAME="fila-frontend"
-        fi
-        
-        echo ""
-        echo "✅ Variáveis finais definidas:"
+        echo "✅ Variáveis definidas:"
         echo "GCP_PROJECT_ID: $GCP_PROJECT_ID"
         echo "GCP_REGION: $GCP_REGION"
         echo "SERVICE_NAME: $SERVICE_NAME"
-        
-        # Verificar se as variáveis foram definidas corretamente
-        if [ -z "$GCP_PROJECT_ID" ] || [ "$GCP_PROJECT_ID" = "***" ]; then
-          echo "❌ ERRO: GCP_PROJECT_ID ainda não está definido corretamente"
-          exit 1
-        fi
-        
-        if [ -z "$GCP_REGION" ] || [ "$GCP_REGION" = "***" ]; then
-          echo "❌ ERRO: GCP_REGION ainda não está definido corretamente"
-          exit 1
-        fi
-        
-        if [ -z "$SERVICE_NAME" ] || [ "$SERVICE_NAME" = "***" ]; then
-          echo "❌ ERRO: SERVICE_NAME ainda não está definido corretamente"
-          exit 1
-        fi
-        
-        echo "✅ Todas as variáveis estão definidas corretamente!"
 
     - name: Extract version from tag
       id: version_check
