@@ -4,21 +4,21 @@ steps:
     args:
       - 'build'
       - '-t'
-      - 'gcr.io/$PROJECT_ID/fila-backoffice:$COMMIT_SHA'
+      - 'us-docker.pkg.dev/$PROJECT_ID/fila-backoffice/fila-backoffice:$COMMIT_SHA'
       - '-t'
-      - 'gcr.io/$PROJECT_ID/fila-backoffice:latest'
+      - 'us-docker.pkg.dev/$PROJECT_ID/fila-backoffice/fila-backoffice:latest'
       - '.'
 
-  # Push da imagem para Container Registry
+  # Push da imagem para Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'gcr.io/$PROJECT_ID/fila-backoffice:$COMMIT_SHA'
+      - 'us-docker.pkg.dev/$PROJECT_ID/fila-backoffice/fila-backoffice:$COMMIT_SHA'
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'gcr.io/$PROJECT_ID/fila-backoffice:latest'
+      - 'us-docker.pkg.dev/$PROJECT_ID/fila-backoffice/fila-backoffice:latest'
 
   # Deploy no Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -28,7 +28,7 @@ steps:
       - 'deploy'
       - 'fila-backoffice'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/fila-backoffice:$COMMIT_SHA'
+      - 'us-docker.pkg.dev/$PROJECT_ID/fila-backoffice/fila-backoffice:$COMMIT_SHA'
       - '--region'
       - 'us-central1'
       - '--platform'
