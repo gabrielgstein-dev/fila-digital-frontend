@@ -1,24 +1,24 @@
 steps:
-  # Build da imagem Docker do backoffice
+  # Build da imagem Docker do frontend
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
       - '-t'
-      - 'us-docker.pkg.dev/$PROJECT_ID/fila-backoffice/fila-backoffice:$COMMIT_SHA'
+      - 'us-docker.pkg.dev/$PROJECT_ID/fila-frontend/fila-frontend:$COMMIT_SHA'
       - '-t'
-      - 'us-docker.pkg.dev/$PROJECT_ID/fila-backoffice/fila-backoffice:latest'
+      - 'us-docker.pkg.dev/$PROJECT_ID/fila-frontend/fila-frontend:latest'
       - '.'
 
   # Push da imagem para Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'us-docker.pkg.dev/$PROJECT_ID/fila-backoffice/fila-backoffice:$COMMIT_SHA'
+      - 'us-docker.pkg.dev/$PROJECT_ID/fila-frontend/fila-frontend:$COMMIT_SHA'
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'us-docker.pkg.dev/$PROJECT_ID/fila-backoffice/fila-backoffice:latest'
+      - 'us-docker.pkg.dev/$PROJECT_ID/fila-frontend/fila-frontend:latest'
 
   # Deploy no Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -26,9 +26,9 @@ steps:
     args:
       - 'run'
       - 'deploy'
-      - 'fila-backoffice'
+      - 'fila-frontend'
       - '--image'
-      - 'us-docker.pkg.dev/$PROJECT_ID/fila-backoffice/fila-backoffice:$COMMIT_SHA'
+      - 'us-docker.pkg.dev/$PROJECT_ID/fila-frontend/fila-frontend:$COMMIT_SHA'
       - '--region'
       - 'us-central1'
       - '--platform'
@@ -57,6 +57,6 @@ timeout: '1200s'
 
 # Tags para organização
 tags:
-  - 'fila-backoffice'
+  - 'fila-frontend'
   - 'nextjs'
   - 'production' 

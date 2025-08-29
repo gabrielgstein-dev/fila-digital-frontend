@@ -37,7 +37,7 @@ jobs:
         fi
         if [ -z "$SERVICE_NAME" ]; then
           echo "SERVICE_NAME not set, using default"
-          echo "SERVICE_NAME=fila-backoffice" >> $GITHUB_ENV
+          echo "SERVICE_NAME=fila-frontend" >> $GITHUB_ENV
         fi
         echo "Using GCP_PROJECT_ID: $GCP_PROJECT_ID"
         echo "Using GCP_REGION: $GCP_REGION"
@@ -86,23 +86,23 @@ jobs:
       if: steps.version_check.outputs.should_deploy == 'true'
       run: |
         VERSION="${{ steps.version_check.outputs.version }}"
-        docker build -t us-docker.pkg.dev/$GCP_PROJECT_ID/fila-backoffice/$SERVICE_NAME:$VERSION \
-                     -t us-docker.pkg.dev/$GCP_PROJECT_ID/fila-backoffice/$SERVICE_NAME:$GITHUB_SHA \
-                     -t us-docker.pkg.dev/$GCP_PROJECT_ID/fila-backoffice/$SERVICE_NAME:latest .
+        docker build -t us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/$SERVICE_NAME:$VERSION \
+                     -t us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/$SERVICE_NAME:$GITHUB_SHA \
+                     -t us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/$SERVICE_NAME:latest .
 
     - name: Push Docker image
       if: steps.version_check.outputs.should_deploy == 'true'
       run: |
         VERSION="${{ steps.version_check.outputs.version }}"
-        docker push us-docker.pkg.dev/$GCP_PROJECT_ID/fila-backoffice/$SERVICE_NAME:$VERSION
-        docker push us-docker.pkg.dev/$GCP_PROJECT_ID/fila-backoffice/$SERVICE_NAME:$GITHUB_SHA
-        docker push us-docker.pkg.dev/$GCP_PROJECT_ID/fila-backoffice/$SERVICE_NAME:latest
+        docker push us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/$SERVICE_NAME:$VERSION
+        docker push us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/$SERVICE_NAME:$GITHUB_SHA
+        docker push us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/$SERVICE_NAME:latest
 
     - name: Deploy to Cloud Run
       if: steps.version_check.outputs.should_deploy == 'true'
       run: |
         gcloud run deploy $SERVICE_NAME \
-          --image us-docker.pkg.dev/$GCP_PROJECT_ID/fila-backoffice/$SERVICE_NAME:$GITHUB_SHA \
+          --image us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/$SERVICE_NAME:$GITHUB_SHA \
           --region $GCP_REGION \
           --platform managed \
           --allow-unauthenticated \
