@@ -60,6 +60,15 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY_STAGE }}
 
+      - name: Validate SA key file
+        if: steps.version_check.outputs.should_deploy == 'true'
+        run: |
+          test -f "$GOOGLE_GHA_CREDS_PATH"
+          jq -e -r '.type,.client_email,.private_key_id,.private_key' "$GOOGLE_GHA_CREDS_PATH" >/dev/null
+          # Verifica se abre como PEM
+          awk 'BEGIN{p=0} /BEGIN PRIVATE KEY/{p=1} {if(p)print} /END PRIVATE KEY/{exit}' "$GOOGLE_GHA_CREDS_PATH" > key.pem
+          openssl pkcs8 -in key.pem -nocrypt -topk8 -inform PEM -out /dev/null
+
       - name: Setup Google Cloud CLI
         if: steps.version_check.outputs.should_deploy == 'true'
         uses: google-github-actions/setup-gcloud@v3
