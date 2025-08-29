@@ -1,124 +1,170 @@
-# Configuração do GitHub Actions para Deploy
+# Configuração dos GitHub Actions para Deploy no Google Cloud
 
-Este documento explica como configurar as variáveis necessárias no GitHub Actions para fazer o deploy automático do projeto.
+Este documento explica como configurar os GitHub Actions para fazer deploy da aplicação no Google Cloud Run.
 
-## Variáveis Necessárias
+## 🔐 Métodos de Autenticação
 
-### Secrets (Configurações Sensíveis)
+Existem duas abordagens principais para autenticação no Google Cloud:
 
-Configure os seguintes secrets no repositório GitHub (`Settings > Secrets and variables > Actions`):
+### 1. Service Account Key JSON (Atual - Corrigido)
 
-#### Para Staging:
-- `GCP_PROJECT_ID_STAGE`: ID do projeto GCP para staging
-- `GCP_SA_KEY_STAGE`: Chave JSON da Service Account do GCP para staging
+**Vantagens:**
+- Mais simples de configurar
+- Funciona imediatamente
+- Não requer configuração adicional no GCP
 
-#### Para Produção:
-- `GCP_PROJECT_ID_PROD`: ID do projeto GCP para produção
-- `GCP_SA_KEY_PROD`: Chave JSON da Service Account do GCP para produção
+**Desvantagens:**
+- Menos seguro (chave JSON armazenada como secret)
+- Requer rotação manual das chaves
 
-### Variables (Configurações Públicas)
+**Configuração necessária:**
+1. Criar uma Service Account no Google Cloud
+2. Baixar a chave JSON
+3. Adicionar como secret `GCP_SA_KEY_STAGE` no GitHub
 
-Configure as seguintes variables no repositório GitHub (`Settings > Secrets and variables > Actions`):
+### 2. Workload Identity Federation (Recomendado)
 
-#### Para Staging:
-- `GCP_REGION_STAGE`: Região do GCP para staging (ex: us-central1)
-- `FRONTEND_SERVICE_NAME_STAGE`: Nome do serviço Cloud Run para staging (ex: fila-backoffice)
-- `NODE_ENV_STAGE`: Ambiente Node.js para staging (ex: staging)
-- `NEXT_PUBLIC_API_URL_STAGE`: URL da API para staging
-- `NEXT_PUBLIC_WS_URL_STAGE`: URL do WebSocket para staging
-- `NEXT_PUBLIC_APP_NAME_STAGE`: Nome da aplicação para staging
+**Vantagens:**
+- Mais seguro (sem chaves persistentes)
+- Autenticação baseada em tokens temporários
+- Integração nativa com GitHub Actions
 
-#### Para Produção:
-- `GCP_REGION_PROD`: Região do GCP para produção (ex: us-central1)
-- `FRONTEND_SERVICE_NAME_PROD`: Nome do serviço Cloud Run para produção (ex: fila-backoffice)
-- `NEXT_PUBLIC_API_URL_PROD`: URL da API para produção
-- `NEXT_PUBLIC_WS_URL_PROD`: URL do WebSocket para produção
-- `NEXT_PUBLIC_APP_NAME_PROD`: Nome da aplicação para produção
+**Desvantagens:**
+- Requer configuração adicional no GCP
+- Mais complexo de configurar inicialmente
 
-#### Comuns:
-- `NEXT_TELEMETRY_DISABLED`: Desabilitar telemetria do Next.js (ex: 1)
+**Configuração necessária:**
+1. Configurar Workload Identity Pool no GCP
+2. Configurar Workload Identity Provider
+3. Configurar Service Account com IAM
+4. Adicionar secrets no GitHub
 
-## Como Configurar
+## 🚀 Workflow Principal (Service Account Key)
 
-### 1. Acesse as Configurações do Repositório
-- Vá para o repositório no GitHub
-- Clique em `Settings`
-- No menu lateral, clique em `Secrets and variables > Actions`
+O arquivo `.github/workflows/cloudrun-deploy-stage.yml` foi corrigido para usar:
 
-### 2. Configure os Secrets
-- Clique na aba `Secrets`
-- Clique em `New repository secret`
-- Adicione cada secret necessário
+- `google-github-actions/auth@v2` para autenticação
+- `google-github-actions/setup-gcloud@v3` para instalação do CLI
+- Versão mínima do gcloud >= 363.0.0
 
-### 3. Configure as Variables
-- Clique na aba `Variables`
-- Clique em `New repository variable`
-- Adicione cada variable necessária
+### Secrets necessários:
+- `GCP_SA_KEY_STAGE`: Chave JSON da Service Account
 
-## Exemplo de Configuração
+### Variáveis necessárias:
+- `GCP_PROJECT_ID_STAGE`: ID do projeto GCP
+- `GCP_REGION_STAGE`: Região do GCP
+- `FRONTEND_SERVICE_NAME_STAGE`: Nome do serviço Cloud Run
 
-### Secrets:
-```
-GCP_PROJECT_ID_STAGE: fila-backoffice-stage
-GCP_SA_KEY_STAGE: {"type":"service_account","project_id":"..."}
-GCP_PROJECT_ID_PROD: fila-backoffice-prod
-GCP_SA_KEY_PROD: {"type":"service_account","project_id":"..."}
-```
+## 🔒 Workflow Alternativo (Workload Identity Federation)
 
-### Variables:
-```
-GCP_REGION_STAGE: us-central1
-FRONTEND_SERVICE_NAME_STAGE: fila-backoffice
-NODE_ENV_STAGE: staging
-NEXT_PUBLIC_API_URL_STAGE: https://fila-api-stage.example.com
-NEXT_PUBLIC_WS_URL_STAGE: wss://fila-api-stage.example.com
-NEXT_PUBLIC_APP_NAME_STAGE: Fila Digital (Staging)
+O arquivo `.github/workflows/cloudrun-deploy-stage-wif.yml` usa a abordagem mais moderna:
 
-GCP_REGION_PROD: us-central1
-FRONTEND_SERVICE_NAME_PROD: fila-backoffice
-NEXT_PUBLIC_API_URL_PROD: https://fila-api.example.com
-NEXT_PUBLIC_WS_URL_PROD: wss://fila-api.example.com
-NEXT_PUBLIC_APP_NAME_PROD: Fila Digital
+### Secrets necessários:
+- `WIF_PROVIDER`: Provider do Workload Identity
+- `WIF_SERVICE_ACCOUNT`: Email da Service Account
 
-NEXT_TELEMETRY_DISABLED: 1
+### Permissões necessárias:
+```yaml
+permissions:
+  contents: 'read'
+  id-token: 'write'
 ```
 
-## Como Obter a Service Account Key
+## 🛠️ Configuração da Service Account
 
-1. Acesse o [Google Cloud Console](https://console.cloud.google.com/)
-2. Selecione o projeto desejado
-3. Vá para `IAM & Admin > Service Accounts`
-4. Clique em `Create Service Account`
-5. Atribua as seguintes roles:
-   - Cloud Run Admin
-   - Storage Admin
-   - Cloud Build Editor
-   - Service Account User
-6. Crie uma chave JSON
-7. Copie o conteúdo da chave para o secret `GCP_SA_KEY_*`
+### Permissões mínimas necessárias:
+- `Cloud Run Admin` (para deploy)
+- `Storage Admin` (para Artifact Registry)
+- `Service Account User` (para execução)
 
-## Testando o Deploy
-
-### Para Staging:
+### Comandos para criar:
 ```bash
-pnpm run version:patch
+# Criar Service Account
+gcloud iam service-accounts create github-actions \
+  --display-name="GitHub Actions Service Account"
+
+# Conceder permissões
+gcloud projects add-iam-policy-binding fila-digital-qa \
+  --member="serviceAccount:github-actions@fila-digital-qa.iam.gserviceaccount.com" \
+  --role="roles/run.admin"
+
+gcloud projects add-iam-policy-binding fila-digital-qa \
+  --member="serviceAccount:github-actions@fila-digital-qa.iam.gserviceaccount.com" \
+  --role="roles/storage.admin"
+
+gcloud projects add-iam-policy-binding fila-digital-qa \
+  --member="serviceAccount:github-actions@fila-digital-qa.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountUser"
+
+# Criar e baixar chave
+gcloud iam service-accounts keys create key.json \
+  --iam-account=github-actions@fila-digital-qa.iam.gserviceaccount.com
 ```
 
-### Para Produção:
+## 🔧 Configuração do Workload Identity Federation
+
+### 1. Criar Workload Identity Pool:
 ```bash
-pnpm run version:prod-patch
+gcloud iam workload-identity-pool create "github-actions-pool" \
+  --project="fila-digital-qa" \
+  --location="global" \
+  --display-name="GitHub Actions Pool"
 ```
 
-## Troubleshooting
+### 2. Criar Workload Identity Provider:
+```bash
+gcloud iam workload-identity-pool-provider create "github-actions-provider" \
+  --project="fila-digital-qa" \
+  --location="global" \
+  --workload-identity-pool="github-actions-pool" \
+  --display-name="GitHub Actions Provider" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
+  --issuer-uri="https://token.actions.githubusercontent.com"
+```
 
-### Erro: "invalid tag gcr.io//:version"
-- Verifique se `GCP_PROJECT_ID` está configurado
-- Verifique se `SERVICE_NAME` está configurado
+### 3. Configurar Service Account:
+```bash
+gcloud iam service-accounts add-iam-policy-binding "github-actions@fila-digital-qa.iam.gserviceaccount.com" \
+  --project="fila-digital-qa" \
+  --role="roles/iam.workloadIdentityUser" \
+  --member="principalSet://iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/github-actions-pool/attribute.repository/SEU_USUARIO/SEU_REPO"
+```
 
-### Erro: "authentication failed"
-- Verifique se `GCP_SA_KEY` está configurado corretamente
-- Verifique se a Service Account tem as permissões necessárias
+## 📋 Checklist de Configuração
 
-### Erro: "region not found"
-- Verifique se `GCP_REGION` está configurado corretamente
-- Verifique se a região existe no projeto GCP
+### Para Service Account Key:
+- [ ] Service Account criada no GCP
+- [ ] Permissões configuradas
+- [ ] Chave JSON baixada
+- [ ] Secret `GCP_SA_KEY_STAGE` adicionado no GitHub
+- [ ] Variáveis configuradas no GitHub
+
+### Para Workload Identity Federation:
+- [ ] Workload Identity Pool criado
+- [ ] Workload Identity Provider configurado
+- [ ] Service Account com permissões de Workload Identity
+- [ ] Secrets `WIF_PROVIDER` e `WIF_SERVICE_ACCOUNT` adicionados
+- [ ] Permissões `id-token: 'write'` configuradas
+
+## 🚨 Troubleshooting
+
+### Erro "NoActiveAccountException":
+- Verificar se a autenticação foi feita antes do setup-gcloud
+- Verificar se as credenciais estão corretas
+- Verificar se a Service Account tem permissões adequadas
+
+### Erro de permissões:
+- Verificar se a Service Account tem todas as permissões necessárias
+- Verificar se o projeto está configurado corretamente
+- Verificar se a região está correta
+
+### Erro de Docker:
+- Verificar se o gcloud auth configure-docker foi executado
+- Verificar se o repositório Artifact Registry existe
+- Verificar permissões de Storage
+
+## 📚 Recursos Adicionais
+
+- [Documentação oficial do setup-gcloud](https://github.com/google-github-actions/setup-gcloud)
+- [Documentação do Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation)
+- [Melhores práticas de segurança](https://cloud.google.com/iam/docs/best-practices-for-managing-service-account-keys)
