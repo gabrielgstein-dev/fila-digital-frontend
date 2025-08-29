@@ -1,216 +1,157 @@
-name: Deploy Frontend to Cloud Run (Production)
+name: Deploy to Cloud Run - Production
 
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'  # Apenas tags sem sufixo (ex: 1.2.3)
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Production tag to deploy (without -stage suffix)'
-        required: true
-        default: '1.0.0'
+      - 'v*'
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'Dockerfile'
+      - 'cloudbuild.yaml'
+      - '.github/workflows/**'
 
 env:
-  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID_PROD }}
-  GCP_REGION: ${{ vars.GCP_REGION_PROD }}
-  SERVICE_NAME: ${{ vars.FRONTEND_SERVICE_NAME_PROD }}
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || 'fila-digital-qa' }}
+  GCP_REGION: ${{ secrets.GCP_REGION || 'us-central1' }}
+  SERVICE_NAME: ${{ secrets.SERVICE_NAME || 'fila-frontend' }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production # Requer aprovação/permissão
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set default environment variables
-      run: |
-        echo "🔧 Configurando variáveis de ambiente:"
-        
-        # Definir variáveis fixas
-        echo "GCP_PROJECT_ID=fila-digital-qa" >> $GITHUB_ENV
-        echo "GCP_REGION=us-central1" >> $GITHUB_ENV
-        echo "SERVICE_NAME=fila-frontend" >> $GITHUB_ENV
-        
-        # Exportar para uso imediato
-        export GCP_PROJECT_ID="fila-digital-qa"
-        export GCP_REGION="us-central1"
-        export SERVICE_NAME="fila-frontend"
-        
-        echo "✅ Variáveis definidas:"
-        echo "GCP_PROJECT_ID: $GCP_PROJECT_ID"
-        echo "GCP_REGION: $GCP_REGION"
-        echo "SERVICE_NAME: $SERVICE_NAME"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
 
-    - name: Extract version from tag
-      id: version_check
-      run: |
-        if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
-          # Extract version from tag
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          echo "Tag detectada: $TAG_NAME"
-          
-          # Validar que NÃO contém -stage e segue formato X.Y.Z
-          if [[ "$TAG_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Version check
+        id: version_check
+        run: |
+          if [ -f "package.json" ]; then
+            VERSION=$(node -p "require('./package.json').version")
+            echo "Current version: $VERSION"
             echo "should_deploy=true" >> $GITHUB_OUTPUT
-            echo "version=$TAG_NAME" >> $GITHUB_OUTPUT
-            echo "✅ Deploy de PRODUÇÃO será executado para versão: $TAG_NAME"
           else
+            echo "No package.json found, skipping deploy"
             echo "should_deploy=false" >> $GITHUB_OUTPUT
-            echo "❌ Tag não é válida para produção (deve ser X.Y.Z sem sufixo)"
           fi
-        elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-          # Manual dispatch
-          TAG_NAME="${{ github.event.inputs.tag }}"
-          echo "should_deploy=true" >> $GITHUB_OUTPUT
-          echo "version=$TAG_NAME" >> $GITHUB_OUTPUT
-          echo "✅ Deploy manual de PRODUÇÃO para versão: $TAG_NAME"
-        else
-          echo "should_deploy=false" >> $GITHUB_OUTPUT
-          echo "❌ Evento não suportado para deploy de produção"
-        fi
 
-    - name: Setup Google Cloud CLI
-      if: steps.version_check.outputs.should_deploy == 'true'
-      uses: google-github-actions/setup-gcloud@v2
-      with:
-        service_account_key: ${{ secrets.GCP_SA_KEY_PROD }}
-        project_id: fila-digital-qa
+      - name: Setup Google Cloud CLI
+        if: steps.version_check.outputs.should_deploy == 'true'
+        run: |
+          echo "🔧 Configurando Google Cloud CLI..."
+          curl -sSL https://sdk.cloud.google.com | bash
+          echo "$HOME/google-cloud-sdk/bin" >> $GITHUB_PATH
+          echo "$HOME/google-cloud-sdk/bin/gcloud" >> $GITHUB_PATH
+          echo "$HOME/google-cloud-sdk/bin/docker-credential-gcloud" >> $GITHUB_PATH
 
-    - name: Check service account key
-      run: |
-        echo "🔍 Verificando chave da conta de serviço:"
-        
-        # Verificar se a variável está definida
-        if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-          echo "✅ GOOGLE_APPLICATION_CREDENTIALS está definida: $GOOGLE_APPLICATION_CREDENTIALS"
+      - name: Authenticate with Service Account
+        if: steps.version_check.outputs.should_deploy == 'true'
+        run: |
+          echo "🔐 Autenticando com conta de serviço..."
           
-          # Verificar se o arquivo existe
-          if [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-            echo "✅ Arquivo de credenciais existe"
-            echo "📄 Conteúdo do arquivo (primeiras linhas):"
-            head -5 "$GOOGLE_APPLICATION_CREDENTIALS"
+          # Salvar a chave em arquivo temporário
+          echo '${{ secrets.GCP_SA_KEY_PROD }}' > /tmp/service-account-key.json
+          
+          # Verificar se o arquivo foi criado corretamente
+          echo "📁 Verificando arquivo da chave:"
+          ls -la /tmp/service-account-key.json
+          echo "📄 Primeiras linhas da chave:"
+          head -5 /tmp/service-account-key.json
+          
+          # Ativar a conta de serviço
+          gcloud auth activate-service-account --key-file=/tmp/service-account-key.json
+          
+          # Configurar projeto
+          gcloud config set project $GCP_PROJECT_ID
+          
+          # Verificar autenticação
+          echo "✅ Conta ativa:"
+          gcloud auth list
+          
+          # Verificar projeto configurado
+          echo "✅ Projeto configurado:"
+          gcloud config get-value project
+
+      - name: Configure Docker
+        if: steps.version_check.outputs.should_deploy == 'true'
+        run: |
+          echo "🐳 Configurando Docker..."
+          
+          # Configurar Docker para Artifact Registry
+          gcloud auth configure-docker us-docker.pkg.dev
+          
+          # Verificar configuração do Docker
+          echo "✅ Configuração do Docker:"
+          cat ~/.docker/config.json
+
+      - name: Build and push Docker image
+        if: steps.version_check.outputs.should_deploy == 'true'
+        run: |
+          echo "🏗️ Construindo e enviando imagem Docker..."
+          
+          # Definir variáveis
+          VERSION="${{ github.sha }}"
+          IMAGE_PATH="us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/fila-frontend"
+          
+          echo "📦 Versão: $VERSION"
+          echo "🖼️ Caminho da imagem: $IMAGE_PATH"
+          
+          # Construir imagem
+          docker build -t $IMAGE_PATH:$VERSION .
+          docker build -t $IMAGE_PATH:latest .
+          
+          # Enviar imagens
+          docker push $IMAGE_PATH:$VERSION
+          docker push $IMAGE_PATH:latest
+          
+          echo "✅ Imagens enviadas com sucesso!"
+
+      - name: Deploy to Cloud Run
+        if: steps.version_check.outputs.should_deploy == 'true'
+        run: |
+          echo "🚀 Fazendo deploy para Cloud Run..."
+          
+          # Definir variáveis
+          VERSION="${{ github.sha }}"
+          IMAGE_PATH="us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/fila-frontend"
+          
+          # Verificar se o serviço existe
+          if gcloud run services describe $SERVICE_NAME --region=$GCP_REGION --format="value(metadata.name)" 2>/dev/null; then
+            echo "🔄 Atualizando serviço existente..."
+            gcloud run services replace-traffic $SERVICE_NAME \
+              --to-latest \
+              --region=$GCP_REGION
           else
-            echo "❌ Arquivo de credenciais NÃO existe"
+            echo "🆕 Criando novo serviço..."
+            gcloud run deploy $SERVICE_NAME \
+              --image=$IMAGE_PATH:latest \
+              --region=$GCP_REGION \
+              --platform=managed \
+              --allow-unauthenticated \
+              --port=3000 \
+              --memory=512Mi \
+              --cpu=1 \
+              --max-instances=10
           fi
-        else
-          echo "❌ GOOGLE_APPLICATION_CREDENTIALS NÃO está definida"
-        fi
-        
-        echo ""
-        echo "🔍 Verificando variáveis do gcloud:"
-        echo "CLOUDSDK_PROJECT: $CLOUDSDK_PROJECT"
-        echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: $CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE"
+          
+          echo "✅ Deploy concluído!"
 
-    - name: Verify variables after gcloud setup
-      if: steps.version_check.outputs.should_deploy == 'true'
-      run: |
-        echo "🔍 Verificando variáveis após setup do gcloud:"
-        echo "GCP_PROJECT_ID: fila-digital-qa"
-        echo "GCP_REGION: us-central1"
-        echo "SERVICE_NAME: fila-frontend"
-        echo "CLOUDSDK_PROJECT: $CLOUDSDK_PROJECT"
-        
-        # Definir variáveis fixas
-        export GCP_PROJECT_ID="fila-digital-qa"
-        export GCP_REGION="us-central1"
-        export SERVICE_NAME="fila-frontend"
-        
-        echo "✅ Variáveis finais definidas:"
-        echo "GCP_PROJECT_ID: $GCP_PROJECT_ID"
-        echo "GCP_REGION: $GCP_REGION"
-        echo "SERVICE_NAME: $SERVICE_NAME"
-
-    - name: Configure project explicitly
-      if: steps.version_check.outputs.should_deploy == 'true'
-      run: |
-        echo "🔧 Configurando projeto explicitamente..."
-        gcloud config set project $GCP_PROJECT_ID
-        echo "✅ Projeto configurado: $(gcloud config get-value project)"
-
-    - name: Debug environment variables
-      if: steps.version_check.outputs.should_deploy == 'true'
-      run: |
-        echo "🔍 Debug das variáveis de ambiente:"
-        echo "GCP_PROJECT_ID: $GCP_PROJECT_ID"
-        echo "GCP_REGION: $GCP_REGION"
-        echo "SERVICE_NAME: $SERVICE_NAME"
-        echo "GOOGLE_APPLICATION_CREDENTIALS: $GOOGLE_APPLICATION_CREDENTIALS"
-        echo "CLOUDSDK_PROJECT: $CLOUDSDK_PROJECT"
-        echo ""
-        echo "🔍 Verificando autenticação:"
-        gcloud auth list
-        echo ""
-        echo "🔍 Verificando projeto configurado:"
-        gcloud config get-value project
-        echo ""
-        echo "🔍 Verificando repositórios disponíveis:"
-        gcloud artifacts repositories list --location=us
-
-    - name: Configure Docker to use gcloud as a credential helper
-      if: steps.version_check.outputs.should_deploy == 'true'
-      run: |
-        echo "🔧 Configurando Docker..."
-        echo "Configurando autenticação..."
-        gcloud auth list
-        gcloud config list
-        gcloud auth configure-docker us-docker.pkg.dev --quiet
-        echo "✅ Docker configurado para us-docker.pkg.dev"
-        
-        # Verificar se o Docker está autenticado
-        echo "🔍 Verificando autenticação do Docker..."
-        docker login us-docker.pkg.dev
-
-    - name: Build Docker image
-      if: steps.version_check.outputs.should_deploy == 'true'
-      run: |
-        VERSION="${{ steps.version_check.outputs.version }}"
-        docker build -t us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/fila-frontend:$VERSION \
-                     -t us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/fila-frontend:$GITHUB_SHA \
-                     -t us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/fila-frontend:latest .
-
-    - name: Push Docker image
-      if: steps.version_check.outputs.should_deploy == 'true'
-      run: |
-        VERSION="${{ steps.version_check.outputs.version }}"
-        docker push us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/fila-frontend:$VERSION
-        docker push us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/fila-frontend:$GITHUB_SHA
-        docker push us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/fila-frontend:latest
-
-    - name: Deploy to Cloud Run
-      if: steps.version_check.outputs.should_deploy == 'true'
-      run: |
-        gcloud run deploy $SERVICE_NAME \
-          --image us-docker.pkg.dev/$GCP_PROJECT_ID/fila-frontend/fila-frontend:$GITHUB_SHA \
-          --region $GCP_REGION \
-          --platform managed \
-          --allow-unauthenticated \
-          --port 8080 \
-          --memory 1Gi \
-          --cpu 2 \
-          --min-instances 1 \
-          --max-instances 20 \
-          --set-env-vars NODE_ENV=production,ENVIRONMENT=production,NEXT_TELEMETRY_DISABLED=${{ vars.NEXT_TELEMETRY_DISABLED }},NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL_PROD }},NEXT_PUBLIC_WS_URL=${{ vars.NEXT_PUBLIC_WS_URL_PROD }},NEXT_PUBLIC_APP_NAME="${{ vars.NEXT_PUBLIC_APP_NAME_PROD }}"
-
-    - name: Get service URL
-      if: steps.version_check.outputs.should_deploy == 'true'
-      run: |
-        SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region $GCP_REGION --format="value(status.url)")
-        VERSION="${{ steps.version_check.outputs.version }}"
-        echo "🚀 Frontend PRODUÇÃO deployed successfully!"
-        echo "📦 Version: $VERSION"
-        echo "🌐 URL: $SERVICE_URL"
-
-    - name: Skip deployment message
-      if: steps.version_check.outputs.should_deploy == 'false'
-      run: |
-        echo "⏭️ Deploy pulado - Tag não é válida para produção"
-        echo "💡 Para deploy de produção, use:"
-        echo "   pnpm run version:prod-patch  (cria tag X.X.X)"
-        echo "   pnpm run version:prod-minor  (cria tag X.X.X)"
-        echo "   pnpm run version:prod-major  (cria tag X.X.X)"
-        echo ""
-        echo "🏷️ Tags de produção devem seguir formato X.Y.Z (sem sufixo)"
-        echo "🔒 Ambiente de produção requer permissões especiais"
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "🧹 Limpando arquivos temporários..."
+          rm -f /tmp/service-account-key.json
+          echo "✅ Limpeza concluída!"
