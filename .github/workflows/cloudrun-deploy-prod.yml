@@ -108,37 +108,23 @@ jobs:
       uses: google-github-actions/setup-gcloud@v2
       with:
         service_account_key: ${{ secrets.GCP_SA_KEY_PROD }}
-        project_id: ${{ secrets.GCP_PROJECT_ID_PROD }}
+        project_id: fila-digital-qa
 
     - name: Verify variables after gcloud setup
       if: steps.version_check.outputs.should_deploy == 'true'
       run: |
         echo "🔍 Verificando variáveis após setup do gcloud:"
-        echo "GCP_PROJECT_ID: $GCP_PROJECT_ID"
-        echo "GCP_REGION: $GCP_REGION"
-        echo "SERVICE_NAME: $SERVICE_NAME"
+        echo "GCP_PROJECT_ID: fila-digital-qa"
+        echo "GCP_REGION: us-central1"
+        echo "SERVICE_NAME: fila-frontend"
         echo "CLOUDSDK_PROJECT: $CLOUDSDK_PROJECT"
         
-        # Se as variáveis ainda estiverem mascaradas, definir novamente
-        if [ "$GCP_PROJECT_ID" = "***" ] || [ -z "$GCP_PROJECT_ID" ]; then
-          echo "⚠️ GCP_PROJECT_ID ainda mascarado, definindo novamente"
-          echo "GCP_PROJECT_ID=fila-digital-qa" >> $GITHUB_ENV
-          export GCP_PROJECT_ID="fila-digital-qa"
-        fi
+        # Definir variáveis fixas
+        export GCP_PROJECT_ID="fila-digital-qa"
+        export GCP_REGION="us-central1"
+        export SERVICE_NAME="fila-frontend"
         
-        if [ "$GCP_REGION" = "***" ] || [ -z "$GCP_REGION" ]; then
-          echo "⚠️ GCP_REGION ainda mascarado, definindo novamente"
-          echo "GCP_REGION=us-central1" >> $GITHUB_ENV
-          export GCP_REGION="us-central1"
-        fi
-        
-        if [ "$SERVICE_NAME" = "***" ] || [ -z "$SERVICE_NAME" ]; then
-          echo "⚠️ SERVICE_NAME ainda mascarado, definindo novamente"
-          echo "SERVICE_NAME=fila-frontend" >> $GITHUB_ENV
-          export SERVICE_NAME="fila-frontend"
-        fi
-        
-        echo "✅ Variáveis finais após correção:"
+        echo "✅ Variáveis finais definidas:"
         echo "GCP_PROJECT_ID: $GCP_PROJECT_ID"
         echo "GCP_REGION: $GCP_REGION"
         echo "SERVICE_NAME: $SERVICE_NAME"
