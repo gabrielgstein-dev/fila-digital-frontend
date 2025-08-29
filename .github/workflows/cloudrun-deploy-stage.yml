@@ -54,20 +54,101 @@ jobs:
             echo "should_deploy=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Validate Service Account Key
+        if: steps.version_check.outputs.should_deploy == 'true'
+        run: |
+          echo "🔍 Validando chave da conta de serviço antes da autenticação..."
+          
+          # Cria arquivo temporário com a chave do secret
+          echo '${{ secrets.GCP_SA_KEY_STAGE }}' > temp_key.json
+          
+          # Verifica se o arquivo foi criado e tem conteúdo
+          if [ ! -s temp_key.json ]; then
+            echo "❌ Secret GCP_SA_KEY_STAGE está vazio ou não foi configurado"
+            exit 1
+          fi
+          
+          echo "✅ Secret encontrado"
+          
+          # Verifica se é um JSON válido
+          if ! jq -e '.' temp_key.json >/dev/null 2>&1; then
+            echo "❌ Secret não é um JSON válido"
+            echo "🔍 Primeiras linhas do secret:"
+            head -3 temp_key.json
+            exit 1
+          fi
+          
+          # Extrai e valida campos obrigatórios
+          if ! jq -e -r '.type,.client_email,.private_key_id,.private_key' temp_key.json >/dev/null 2>&1; then
+            echo "❌ Campos obrigatórios não encontrados no JSON"
+            echo "🔍 Campos disponíveis:"
+            jq -r 'keys[]' temp_key.json
+            exit 1
+          fi
+          
+          # Verifica o tipo da conta de serviço
+          SERVICE_TYPE=$(jq -r '.type' temp_key.json)
+          if [ "$SERVICE_TYPE" != "service_account" ]; then
+            echo "❌ Tipo incorreto: $SERVICE_TYPE (esperado: service_account)"
+            exit 1
+          fi
+          
+          echo "✅ Tipo da conta: $SERVICE_TYPE"
+          
+          # Verifica o email da conta
+          CLIENT_EMAIL=$(jq -r '.client_email' temp_key.json)
+          echo "✅ Email da conta: $CLIENT_EMAIL"
+          
+          # Verifica se a chave privada está presente
+          PRIVATE_KEY=$(jq -r '.private_key' temp_key.json)
+          if [ "$PRIVATE_KEY" = "null" ] || [ -z "$PRIVATE_KEY" ]; then
+            echo "❌ Chave privada não encontrada ou vazia"
+            exit 1
+          fi
+          
+          echo "✅ Chave privada encontrada"
+          
+          # Verifica se a chave privada tem o formato correto
+          if [[ ! "$PRIVATE_KEY" =~ ^-----BEGIN\ PRIVATE\ KEY----- ]]; then
+            echo "❌ Chave privada não está no formato PEM correto"
+            echo "🔍 Início da chave:"
+            echo "$PRIVATE_KEY" | head -1
+            exit 1
+          fi
+          
+          if [[ ! "$PRIVATE_KEY" =~ -----END\ PRIVATE\ KEY-----$ ]]; then
+            echo "❌ Chave privada não termina corretamente"
+            echo "🔍 Fim da chave:"
+            echo "$PRIVATE_KEY" | tail -1
+            exit 1
+          fi
+          
+          echo "✅ Formato PEM da chave privada está correto"
+          
+          # Tenta extrair e validar a chave
+          echo "$PRIVATE_KEY" > key.pem
+          
+          # Verifica se a chave pode ser lida pelo OpenSSL
+          if ! openssl pkcs8 -in key.pem -nocrypt -topk8 -inform PEM -out /dev/null 2>/dev/null; then
+            echo "❌ Chave privada não pode ser lida pelo OpenSSL"
+            echo "🔍 Verificando formato da chave..."
+            head -1 key.pem
+            tail -1 key.pem
+            exit 1
+          fi
+          
+          echo "✅ Chave privada validada com sucesso pelo OpenSSL"
+          
+          # Limpa arquivos temporários
+          rm -f temp_key.json key.pem
+          
+          echo "🎉 Validação da chave concluída - pronta para autenticação!"
+
       - name: Authenticate to Google Cloud
         if: steps.version_check.outputs.should_deploy == 'true'
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY_STAGE }}
-
-      - name: Validate SA key file
-        if: steps.version_check.outputs.should_deploy == 'true'
-        run: |
-          test -f "$GOOGLE_GHA_CREDS_PATH"
-          jq -e -r '.type,.client_email,.private_key_id,.private_key' "$GOOGLE_GHA_CREDS_PATH" >/dev/null
-          # Verifica se abre como PEM
-          awk 'BEGIN{p=0} /BEGIN PRIVATE KEY/{p=1} {if(p)print} /END PRIVATE KEY/{exit}' "$GOOGLE_GHA_CREDS_PATH" > key.pem
-          openssl pkcs8 -in key.pem -nocrypt -topk8 -inform PEM -out /dev/null
 
       - name: Setup Google Cloud CLI
         if: steps.version_check.outputs.should_deploy == 'true'
