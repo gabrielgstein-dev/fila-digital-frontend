@@ -11,11 +11,10 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 const loginSchema = z.object({
-  cpf: z
+  email: z
     .string()
-    .min(11, 'CPF deve ter 11 dígitos')
-    .max(11, 'CPF deve ter 11 dígitos')
-    .regex(/^\d+$/, 'CPF deve conter apenas números'),
+    .min(1, 'Email é obrigatório')
+    .email('Email deve ser válido'),
   password: z.string().min(1, 'Senha é obrigatória'),
 })
 
@@ -55,14 +54,14 @@ export default function LoginPage() {
 
     try {
       const result = await signIn('credentials', {
-        cpf: data.cpf,
+        email: data.email,
         password: data.password,
         redirect: false,
       })
 
       if (result?.error) {
         if (result.error.includes('CredentialsSignin')) {
-          setError('CPF ou senha incorretos')
+          setError('Email ou senha incorretos')
         } else {
           setError('Erro ao fazer login. Tente novamente.')
         }
@@ -86,7 +85,7 @@ export default function LoginPage() {
       </div>
 
       {/* Header */}
-      <div className="absolute top-6 right-6 z-10">
+      <div className="absolute top-6 right-6 z-50 pointer-events-auto">
         <ThemeToggle />
       </div>
 
@@ -166,28 +165,27 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div>
                   <label
-                    htmlFor="cpf"
+                    htmlFor="email"
                     className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3"
                   >
-                    CPF
+                    Email
                   </label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <User className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                     </div>
                     <input
-                      {...register('cpf')}
-                      type="text"
-                      id="cpf"
-                      placeholder="00000000000"
+                      {...register('email')}
+                      type="email"
+                      id="email"
+                      placeholder="exemplo@email.com"
                       className="block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-500"
-                      maxLength={11}
                     />
                   </div>
-                  {errors.cpf && (
+                  {errors.email && (
                     <p className="mt-2 text-sm text-red-500 dark:text-red-400 flex items-center">
                       <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>
-                      {errors.cpf.message}
+                      {errors.email.message}
                     </p>
                   )}
                 </div>

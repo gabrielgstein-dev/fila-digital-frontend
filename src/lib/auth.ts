@@ -9,22 +9,22 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'credentials',
       credentials: {
-        cpf: { label: 'CPF', type: 'text' },
+        email: { label: 'Email', type: 'email' },
         password: { label: 'Senha', type: 'password' }
       },
       async authorize(credentials) {
-        if (!credentials?.cpf || !credentials?.password) {
+        if (!credentials?.email || !credentials?.password) {
           console.log('🔐 NextAuth: Credenciais ausentes')
           return null
         }
 
-        console.log('🔐 NextAuth: Tentativa de login para CPF:', credentials.cpf)
+        console.log('🔐 NextAuth: Tentativa de login para email:', credentials.email)
         console.log('🔐 NextAuth: URL da API:', env.API_URL)
 
         try {
           console.log('🔐 NextAuth: Chamando API de login...')
           const response = await apiClient.login({
-            cpf: credentials.cpf,
+            email: credentials.email,
             password: credentials.password
           })
 

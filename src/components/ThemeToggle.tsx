@@ -6,10 +6,14 @@ import { Sun, Moon } from 'lucide-react'
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
 
+  const handleClick = () => {
+    toggleTheme()
+  }
+
   return (
     <button
-      onClick={toggleTheme}
-      className="group relative p-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-white/20 dark:border-slate-700/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
+      onClick={handleClick}
+      className="group relative p-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-white/20 dark:border-slate-700/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
       aria-label={`Alternar para tema ${theme === 'light' ? 'escuro' : 'claro'}`}
     >
       <div className="relative w-6 h-6">

@@ -87,7 +87,7 @@ class ApiClient {
   }
 
   async login(credentials: LoginDto): Promise<AuthResponse> {
-    console.log('🌐 API: Iniciando login para CPF:', credentials.cpf)
+    console.log('🌐 API: Iniciando login para email:', credentials.email)
     console.log('🌐 API: URL base:', this.baseURL)
     console.log('🌐 API: Endpoint completo:', `${this.baseURL}/auth/login`)
     
