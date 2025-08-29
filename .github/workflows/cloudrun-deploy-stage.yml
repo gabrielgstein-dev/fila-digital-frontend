@@ -14,7 +14,7 @@ on:
 env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID_STAGE }}
   GCP_REGION: ${{ vars.GCP_REGION_STAGE }}
-  SERVICE_NAME: ${{ vars.FRONTEND_SERVICE_NAME_STAGE }}
+  SERVICE_NAME: ${{ vars.FRONTEND_SERVICE_NAME_STAGE || 'fila-frontend-stage' }}
   # Ajuste isto conforme a LOCALIZAÇÃO do repositório no Artifact Registry:
   # Se o repo estiver em 'us' => 'us-docker.pkg.dev'
   # Se estiver em 'us-central1' => 'us-central1-docker.pkg.dev'
@@ -160,15 +160,70 @@ jobs:
       - name: Debug
         if: steps.version_check.outputs.should_deploy == 'true'
         run: |
+          echo "🔍 === DEBUG INFO ==="
           echo "GCP_PROJECT_ID=$GCP_PROJECT_ID"
           echo "GCP_REGION=$GCP_REGION"
           echo "SERVICE_NAME=$SERVICE_NAME"
           echo "ARTIFACTS_HOST=$ARTIFACTS_HOST"
+          echo "AR_REPO=$AR_REPO"
+          echo "IMAGE_NAME=$IMAGE_NAME"
+          echo ""
+          echo "🔧 === GCLOUD CONFIG ==="
           gcloud config get-value project
           gcloud auth list
-          # Liste repositórios na localização compatível com ARTIFACTS_HOST
-          gcloud artifacts repositories list --location=us || true
-          gcloud artifacts repositories list --location=us-central1 || true
+          echo ""
+          echo "📦 === ARTIFACT REGISTRY ==="
+          gcloud artifacts repositories list --location=us || echo "❌ Erro ao listar repositórios em 'us'"
+          gcloud artifacts repositories list --location=us-central1 || echo "❌ Erro ao listar repositórios em 'us-central1'"
+          echo ""
+          echo "🚀 === CLOUD RUN SERVICES ==="
+          gcloud run services list --region=us-central1 --limit=5 || echo "❌ Erro ao listar serviços Cloud Run"
+          echo ""
+          echo "✅ === DEBUG COMPLETO ==="
+
+      - name: Validate Environment Variables
+        if: steps.version_check.outputs.should_deploy == 'true'
+        run: |
+          echo "🔍 Validando variáveis de ambiente..."
+          
+          # Verifica variáveis obrigatórias
+          if [ -z "$GCP_PROJECT_ID" ]; then
+            echo "❌ GCP_PROJECT_ID não está definido"
+            exit 1
+          fi
+          
+          if [ -z "$GCP_REGION" ]; then
+            echo "❌ GCP_REGION não está definido"
+            exit 1
+          fi
+          
+          if [ -z "$SERVICE_NAME" ]; then
+            echo "❌ SERVICE_NAME não está definido"
+            exit 1
+          fi
+          
+          if [ -z "$ARTIFACTS_HOST" ]; then
+            echo "❌ ARTIFACTS_HOST não está definido"
+            exit 1
+          fi
+          
+          if [ -z "$AR_REPO" ]; then
+            echo "❌ AR_REPO não está definido"
+            exit 1
+          fi
+          
+          if [ -z "$IMAGE_NAME" ]; then
+            echo "❌ IMAGE_NAME não está definido"
+            exit 1
+          fi
+          
+          echo "✅ Todas as variáveis de ambiente estão definidas:"
+          echo "   GCP_PROJECT_ID: $GCP_PROJECT_ID"
+          echo "   GCP_REGION: $GCP_REGION"
+          echo "   SERVICE_NAME: $SERVICE_NAME"
+          echo "   ARTIFACTS_HOST: $ARTIFACTS_HOST"
+          echo "   AR_REPO: $AR_REPO"
+          echo "   IMAGE_NAME: $IMAGE_NAME"
 
       - name: Configure Docker credential helper
         if: steps.version_check.outputs.should_deploy == 'true'
