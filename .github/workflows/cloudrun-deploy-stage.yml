@@ -77,6 +77,31 @@ jobs:
         service_account_key: ${{ secrets.GCP_SA_KEY_STAGE }}
         project_id: fila-digital-qa
 
+    - name: Check service account key
+      run: |
+        echo "🔍 Verificando chave da conta de serviço:"
+        
+        # Verificar se a variável está definida
+        if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+          echo "✅ GOOGLE_APPLICATION_CREDENTIALS está definida: $GOOGLE_APPLICATION_CREDENTIALS"
+          
+          # Verificar se o arquivo existe
+          if [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+            echo "✅ Arquivo de credenciais existe"
+            echo "📄 Conteúdo do arquivo (primeiras linhas):"
+            head -5 "$GOOGLE_APPLICATION_CREDENTIALS"
+          else
+            echo "❌ Arquivo de credenciais NÃO existe"
+          fi
+        else
+          echo "❌ GOOGLE_APPLICATION_CREDENTIALS NÃO está definida"
+        fi
+        
+        echo ""
+        echo "🔍 Verificando variáveis do gcloud:"
+        echo "CLOUDSDK_PROJECT: $CLOUDSDK_PROJECT"
+        echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: $CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE"
+
     - name: Verify variables after gcloud setup
       if: steps.version_check.outputs.should_deploy == 'true'
       run: |
