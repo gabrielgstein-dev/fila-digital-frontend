@@ -22,17 +22,10 @@
     "version:prod-patch": "pnpm version patch --no-git-tag-version && pnpm run version:prod-deploy",
     "version:prod-minor": "pnpm version minor --no-git-tag-version && pnpm run version:prod-deploy",
     "version:prod-major": "pnpm version major --no-git-tag-version && pnpm run version:prod-deploy",
-    "version:prod-deploy": "node -e \"const pkg = require('./package.json'); const version = pkg.version; require('child_process').execSync('git add package.json', {stdio: 'inherit'}); require('child_process').execSync('git commit -m \\\"chore: release version ' + version + '\\\"', {stdio: 'inherit'}); require('child_process').execSync('git tag ' + version, {stdio: 'inherit'}); require('child_process').execSync('git push origin main', {stdio: 'inherit'}); require('child_process').execSync('git push origin ' + version, {stdio: 'inherit'});\"",
-    "igniter:dev": "tsx src/igniter/main.ts",
-    "igniter:build": "tsc -p tsconfig.igniter.json",
-    "igniter:start": "node dist/igniter/main.js",
-    "mcp:dev": "tsx src/igniter/mcp-server.ts",
-    "mcp:start": "node dist/igniter/mcp-server.js"
+    "version:prod-deploy": "node -e \"const pkg = require('./package.json'); const version = pkg.version; require('child_process').execSync('git add package.json', {stdio: 'inherit'}); require('child_process').execSync('git commit -m \\\"chore: release version ' + version + '\\\"', {stdio: 'inherit'}); require('child_process').execSync('git tag ' + version, {stdio: 'inherit'}); require('child_process').execSync('git push origin main', {stdio: 'inherit'}); require('child_process').execSync('git push origin ' + version, {stdio: 'inherit'});\""
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",
-    "@igniter-js/core": "^0.2.80",
-    "@igniter-js/mcp-server": "^0.0.56",
     "@tamagui/animations-react-native": "^1.132.23",
     "@tamagui/colors": "^1.132.23",
     "@tamagui/config": "^1.132.23",
@@ -55,7 +48,6 @@
     "socket.io-client": "^4.7.5",
     "sonner": "^1.4.0",
     "tailwind-merge": "^2.0.0",
-    "tsx": "^4.20.5",
     "zod": "^3.25.76",
     "zustand": "^4.4.0"
   },

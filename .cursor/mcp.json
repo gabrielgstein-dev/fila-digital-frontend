@@ -1,12 +1,12 @@
 {
   "mcpServers": {
-    "fila-backoffice": {
+    "fila-api-backend": {
       "command": "node",
-      "args": ["./src/igniter/mcp-server-reusable.js"],
+      "args": ["../fila-api/src/igniter/mcp-server.js"],
       "env": {
         "NODE_ENV": "development",
-        "IGNITER_PORT": "3001",
-        "NEXT_PUBLIC_API_URL": "http://localhost:8080"
+        "DATABASE_URL": "file:../fila-api/prisma/dev.db",
+        "JWT_SECRET": "your-secret-key"
       }
     }
   }

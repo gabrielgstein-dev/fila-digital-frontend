@@ -1,0 +1,12 @@
+# Arquivos JavaScript do Igniter.js (não são parte do build do Next.js)
+src/igniter/mcp-server-reusable.js
+src/igniter/*.js
+
+# Arquivos de build
+.next/
+dist/
+node_modules/
+
+# Arquivos de configuração
+*.config.js
+*.config.mjs
