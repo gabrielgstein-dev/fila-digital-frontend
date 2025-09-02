@@ -271,8 +271,6 @@ class IgniterClient {
     return this.request('/dashboard/connection-status', {}, true, 10 * 1000); // Cache por 10s
   }
 
-  // ==================== SESSION MANAGEMENT ====================
-
   async getSessionInfo(): Promise<IgniterSessionInfo> {
     return this.request<IgniterSessionInfo>('/dashboard/session-info');
   }
