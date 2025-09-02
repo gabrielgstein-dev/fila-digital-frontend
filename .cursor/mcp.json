@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "fila-backoffice": {
+      "command": "node",
+      "args": ["./src/igniter/mcp-server-reusable.js"],
+      "env": {
+        "NODE_ENV": "development",
+        "IGNITER_PORT": "3001",
+        "NEXT_PUBLIC_API_URL": "http://localhost:8080"
+      }
+    }
+  }
+}

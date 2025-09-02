@@ -1,0 +1,59 @@
+{
+  "name": "fila-backoffice-nextjs-igniter",
+  "description": "MCP Server para Backoffice de Fila Digital com Igniter.js",
+  "version": "1.0.20-stage",
+  "projectType": "nextjs-igniter",
+  "customTools": [
+    {
+      "name": "call-auth-login",
+      "description": "Executa login de usuário corporativo",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "description": "Email do usuário" },
+          "password": { "type": "string", "description": "Senha do usuário" }
+        },
+        "required": ["email", "password"]
+      }
+    },
+    {
+      "name": "create-tenant",
+      "description": "Cria um novo tenant",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Nome do tenant" },
+          "description": { "type": "string", "description": "Descrição do tenant" }
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "list-queues",
+      "description": "Lista todas as filas de um tenant",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tenantId": { "type": "string", "description": "ID do tenant" }
+        },
+        "required": ["tenantId"]
+      }
+    }
+  ],
+  "endpoints": {
+    "baseUrl": "http://localhost:8080",
+    "basePath": "/api/v1",
+    "custom": [
+      "POST /auth/login - Login de usuário corporativo",
+      "POST /auth/agent/login - Login de agente",
+      "POST /auth/client/login - Login de cliente",
+      "GET /auth/google - Iniciar login com Google",
+      "GET /auth/google/callback - Callback do Google",
+      "POST /auth/google/token - Login móvel com token Google"
+    ]
+  },
+  "environment": {
+    "required": ["DATABASE_URL", "JWT_SECRET"],
+    "optional": ["GOOGLE_CLIENT_ID", "GOOGLE_REDIRECT_URI", "FRONTEND_URL"]
+  }
+}

@@ -6,8 +6,14 @@ import {
   QueueStats,
   LoginDto,
   AuthResponse,
+  IgniterDashboardMetrics,
+  IgniterChartData,
+  IgniterSessionInfo,
+  IgniterTokenStatus,
+  IgniterRefreshTokenResponse,
 } from '@/types';
 import { env } from '@/config/env';
+import { igniterClient } from '@/lib/igniter-client';
 
 const API_BASE_URL = env.API_URL;
 
@@ -184,6 +190,63 @@ class ApiClient {
 
   async getQueueStats(tenantId: string, queueId: string): Promise<QueueStats> {
     return this.request<QueueStats>(`/tenants/${tenantId}/queues/${queueId}/stats`);
+  }
+
+  // ==================== IGNITER METHODS ====================
+
+  // Configurar token no cliente Igniter
+  setIgniterToken(token: string) {
+    igniterClient.setToken(token);
+  }
+
+  // Dashboard Igniter methods
+  async getIgniterPublicMetrics() {
+    return igniterClient.getPublicMetrics();
+  }
+
+  async getIgniterPrivateMetrics(): Promise<IgniterDashboardMetrics> {
+    return igniterClient.getPrivateMetrics();
+  }
+
+  async getIgniterAdminMetrics() {
+    return igniterClient.getAdminMetrics();
+  }
+
+  async getIgniterTenantMetrics() {
+    return igniterClient.getTenantMetrics();
+  }
+
+  async updateIgniterMetrics(data: {
+    metricType: 'users' | 'tickets' | 'revenue' | 'performance';
+    value: number;
+    description?: string;
+  }) {
+    return igniterClient.updateMetrics(data);
+  }
+
+  async getIgniterChartData(params: {
+    type?: string;
+    period?: string;
+    tenantId?: string;
+  } = {}): Promise<IgniterChartData> {
+    return igniterClient.getChartData(params);
+  }
+
+  async getIgniterConnectionStatus() {
+    return igniterClient.getConnectionStatus();
+  }
+
+  // Session management methods
+  async getIgniterSessionInfo(): Promise<IgniterSessionInfo> {
+    return igniterClient.getSessionInfo();
+  }
+
+  async refreshIgniterToken(): Promise<IgniterRefreshTokenResponse> {
+    return igniterClient.refreshToken();
+  }
+
+  async getIgniterTokenStatus(): Promise<IgniterTokenStatus> {
+    return igniterClient.getTokenStatus();
   }
 }
 

@@ -183,3 +183,80 @@ export interface NextAuthJWT {
   accessToken: string;
   userType: string;
 }
+
+// ==================== IGNITER TYPES ====================
+
+export interface IgniterTokenInfo {
+  token: string;
+  expiresAt: string;
+  expiresIn: number;
+  shouldRefresh: boolean;
+  timeToExpire: string;
+}
+
+export interface IgniterSessionInfo {
+  userId: string;
+  tenantId: string;
+  role: string;
+  tokenInfo: IgniterTokenInfo;
+  sessionStart: string;
+  lastActivity: string;
+  warnings: {
+    tokenExpiring: boolean;
+    timeRemaining: string;
+  };
+}
+
+export interface IgniterDashboardMetrics {
+  userMetrics: {
+    userId: string;
+    tenantId: string;
+    lastLogin: string;
+  };
+  tenantMetrics: {
+    totalTickets: number;
+    activeAgents: number;
+    avgWaitTime: string;
+    queueLength: number;
+  };
+}
+
+export interface IgniterChartData {
+  tenantId: string;
+  chartData: {
+    labels: string[];
+    datasets: Array<{
+      label: string;
+      data: number[];
+      backgroundColor: string;
+      borderColor: string;
+      borderWidth: number;
+    }>;
+  };
+  metadata: {
+    generatedAt: string;
+    requestedBy: string;
+    period: string;
+    type: string;
+  };
+}
+
+export interface IgniterTokenStatus {
+  status: 'valid' | 'expiring_soon';
+  token: string;
+  expiresAt: string;
+  expiresIn: number;
+  shouldRefresh: boolean;
+  timeToExpire: string;
+  recommendations: {
+    should_refresh: boolean;
+    action: string;
+  };
+}
+
+export interface IgniterRefreshTokenResponse {
+  message: string;
+  access_token: string;
+  expires_in: number;
+  refreshed_at: string;
+}
