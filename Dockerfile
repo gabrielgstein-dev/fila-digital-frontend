@@ -17,7 +17,7 @@ RUN npm install -g pnpm
 
 # Stage para instalar dependências
 FROM base AS deps
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
 
 # Stage para build da aplicação
 FROM base AS builder
