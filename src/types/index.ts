@@ -4,6 +4,17 @@ export enum QueueType {
   VIP = 'VIP',
 }
 
+export enum ServiceType {
+  GENERAL = 'GENERAL',
+  CONSULTA = 'CONSULTA',
+  EXAMES = 'EXAMES',
+  BALCAO = 'BALCAO',
+  TRIAGEM = 'TRIAGEM',
+  CAIXA = 'CAIXA',
+  PEDIATRIA = 'PEDIATRIA',
+  URGENCIA = 'URGENCIA',
+}
+
 export enum TicketStatus {
   WAITING = 'WAITING',
   CALLED = 'CALLED',
@@ -43,22 +54,65 @@ export interface Queue {
   name: string;
   description?: string;
   queueType: QueueType;
+  serviceType: ServiceType;
+  toleranceMinutes: number;
   isActive: boolean;
-  capacity: number;
+  capacity: number | null;
   avgServiceTime: number;
   createdAt: string;
   updatedAt: string;
   tenantId: string;
   tenant?: Tenant;
   tickets?: Ticket[];
+  currentNumber?: string;
+  previousNumber?: string;
+  totalProcessed?: number;
+  lastCalledAt?: string;
+  totalWaiting?: number;
   _count?: {
     tickets: number;
+  };
+}
+
+export interface QueueState {
+  id: string;
+  queueId: string;
+  currentTicketId?: string;
+  previousTicketId?: string;
+  lastCalledAt?: string;
+  totalProcessed: number;
+  createdAt: string;
+  updatedAt: string;
+  currentTicket?: {
+    myCallingToken: string;
+  };
+  previousTicket?: {
+    myCallingToken: string;
+  };
+}
+
+export interface QueueTicketHistory {
+  id: string;
+  queueId: string;
+  ticketId: string;
+  action: string;
+  callingToken: string;
+  calledBy?: string;
+  calledAt: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  ticket?: {
+    myCallingToken: string;
+    clientName?: string;
+    clientPhone?: string;
+    priority: number;
   };
 }
 
 export interface Ticket {
   id: string;
   number: number;
+  myCallingToken: string;
   priority: number;
   status: TicketStatus;
   clientName?: string;
@@ -113,18 +167,52 @@ export interface CallLog {
 }
 
 export interface QueueStats {
-  waiting: number;
-  called: number;
-  completed: number;
-  avgServiceTime: number;
+  queueInfo: {
+    id: string;
+    name: string;
+    description: string;
+    capacity: number;
+    toleranceMinutes: number;
+    avgServiceTime: number;
+    status: string;
+  };
+  currentStats: {
+    waitingCount: number;
+    calledCount: number;
+    completedToday: number;
+    nextEstimatedTime: number;
+    nextEstimatedTimeMinutes: number;
+    completionRate: number;
+  };
+  performance: {
+    avgWaitTime: number;
+    avgWaitTimeMinutes: number;
+    totalProcessedToday: number;
+    abandonmentRate: number;
+  };
+  lastUpdated: string;
+}
+
+export interface AbandonmentStats {
+  totalTickets: number;
+  noShowTickets: number;
+  abandonmentRate: number;
+  period: string;
+}
+
+export interface CleanupResponse {
+  cleanedCount: number;
+  queueId: string;
+  message: string;
 }
 
 export interface CreateQueueDto {
   name: string;
   description?: string;
   queueType?: QueueType;
+  serviceType?: ServiceType;
+  toleranceMinutes?: number;
   capacity?: number;
-  avgServiceTime?: number;
 }
 
 export interface CreateTicketDto {
@@ -259,4 +347,32 @@ export interface IgniterRefreshTokenResponse {
   access_token: string;
   expires_in: number;
   refreshed_at: string;
+}
+
+// ==================== QUEUE REPORTS TYPES ====================
+
+export interface QueueReportStatistics {
+  totalProcessed: number;
+  avgServiceTime: number;
+  avgCallInterval: number;
+  avgWaitTime: number;
+  callsByHour: Array<{ hour: number; count: number }>;
+  completionRate: number;
+}
+
+export interface QueueHistoryResponse {
+  data: QueueTicketHistory[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}
+
+export interface SlowestTicket {
+  ticket_id: string;
+  calling_token: string;
+  service_time: number;
+  called_at: string;
 }
