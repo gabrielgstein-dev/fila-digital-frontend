@@ -4,6 +4,8 @@ import {
   CreateQueueDto,
   CreateTicketDto,
   QueueStats,
+  AbandonmentStats,
+  CleanupResponse,
   LoginDto,
   AuthResponse,
   IgniterDashboardMetrics,
@@ -130,6 +132,10 @@ class ApiClient {
   }
 
   async createQueue(tenantId: string, queue: CreateQueueDto): Promise<Queue> {
+    console.log('🏗️ ApiClient.createQueue chamado com:', { tenantId, queue })
+    console.log('🌐 URL base configurada:', this.baseURL)
+    console.log('🔐 Token configurado:', this.token ? 'Sim' : 'Não')
+    
     return this.request<Queue>(`/tenants/${tenantId}/queues`, {
       method: 'POST',
       body: JSON.stringify(queue),
@@ -190,6 +196,16 @@ class ApiClient {
 
   async getQueueStats(tenantId: string, queueId: string): Promise<QueueStats> {
     return this.request<QueueStats>(`/tenants/${tenantId}/queues/${queueId}/stats`);
+  }
+
+  async getAbandonmentStats(tenantId: string, queueId: string): Promise<AbandonmentStats> {
+    return this.request<AbandonmentStats>(`/tenants/${tenantId}/queues/${queueId}/abandonment-stats`);
+  }
+
+  async cleanupQueue(tenantId: string, queueId: string): Promise<CleanupResponse> {
+    return this.request<CleanupResponse>(`/tenants/${tenantId}/queues/${queueId}/cleanup`, {
+      method: 'POST',
+    });
   }
 
   // ==================== IGNITER METHODS ====================
