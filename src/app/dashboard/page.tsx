@@ -1,50 +1,29 @@
 'use client'
 
-import { signOut } from 'next-auth/react'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { ThemeToggle } from '@/components/ThemeToggle'
-import { LogOut, Building2, User, Shield } from 'lucide-react'
+import { Users, BarChart3, Settings, User, Shield, Building2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
 
 export default function DashboardPage() {
   const { user } = useAuth()
-
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: '/login' })
-  }
+  const router = useRouter()
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-4">
-                <Building2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Fila Digital - Backoffice
-                </h1>
-              </div>
-              <div className="flex items-center space-x-4">
-                <ThemeToggle />
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Sair</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 relative">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden z-0">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 dark:bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-400/20 dark:bg-indigo-500/10 rounded-full blur-3xl"></div>
+      </div>
 
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                Bem-vindo ao Backoffice
-              </h2>
+      <div className="relative z-0 max-w-7xl mx-auto py-8 px-6">
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 dark:border-slate-700/50 p-8">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+            Bem-vindo ao Backoffice
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-8">
+            Gerencie suas filas digitais de forma inteligente
+          </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -91,41 +70,53 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Funcionalidades Disponíveis
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Gerenciamento de filas
+          <div className="bg-gradient-to-br from-slate-50/50 to-indigo-50/50 dark:from-slate-800/50 dark:to-indigo-900/20 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">
+              Acesso Rápido
+            </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <button
+                    onClick={() => router.push('/filas')}
+                    className="flex flex-col items-center p-6 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] border border-white/20 dark:border-slate-600/50 hover:border-blue-300 dark:hover:border-blue-400 group"
+                  >
+                    <Users className="w-10 h-10 text-blue-500 mb-3 group-hover:scale-110 transition-transform" />
+                    <span className="text-base font-semibold text-slate-700 dark:text-slate-300 text-center mb-1">
+                      Gerenciar Filas
                     </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Controle de atendimentos
+                    <span className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                      Visualize e gerencie todas as suas filas
                     </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Relatórios e estatísticas
+                  </button>
+
+                  <button
+                    onClick={() => router.push('/backend-integration')}
+                    className="flex flex-col items-center p-6 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] border border-white/20 dark:border-slate-600/50 hover:border-purple-300 dark:hover:border-purple-400 group"
+                  >
+                    <BarChart3 className="w-10 h-10 text-purple-500 mb-3 group-hover:scale-110 transition-transform" />
+                    <span className="text-base font-semibold text-slate-700 dark:text-slate-300 text-center mb-1">
+                      Integração
                     </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Configurações do sistema
+                    <span className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                      Configure integrações e relatórios
                     </span>
-                  </div>
+                  </button>
+
+                  <button
+                    className="flex flex-col items-center p-6 bg-white/40 dark:bg-slate-700/40 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 dark:border-slate-600/50 opacity-50 cursor-not-allowed"
+                    disabled
+                  >
+                    <Settings className="w-10 h-10 text-orange-500 mb-3" />
+                    <span className="text-base font-semibold text-slate-700 dark:text-slate-300 text-center mb-1">
+                      Configurações
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                      Em breve - Configurações do sistema
+                    </span>
+                  </button>
                 </div>
-              </div>
-            </div>
           </div>
-        </main>
+        </div>
       </div>
-    </ProtectedRoute>
+    </div>
   )
 }
