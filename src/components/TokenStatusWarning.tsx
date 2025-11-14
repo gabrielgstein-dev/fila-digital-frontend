@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useTokenStatus } from '@/hooks/useTokenManager';
+import { useTokenStatus } from '@/stores/token-manager';
 import { AlertTriangle, Clock, RefreshCw } from 'lucide-react';
 
 interface TokenStatusWarningProps {
