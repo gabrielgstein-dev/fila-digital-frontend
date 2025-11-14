@@ -1,28 +1,42 @@
-# Documentação do Projeto
+# 📚 Documentação do Projeto Fila Backoffice
 
-Esta pasta contém toda a documentação técnica e de configuração do projeto Fila Backoffice.
+## 🚀 **Configuração Inicial**
+- **[ENV_SETUP.md](./ENV_SETUP.md)** - Variáveis de ambiente
+- **[LOGIN_IMPLEMENTATION.md](./LOGIN_IMPLEMENTATION.md)** - NextAuth + JWT
 
-## 📚 Documentos Disponíveis
+## 🎨 **Design System**
+- **[design_system/INDEX.md](./design_system/INDEX.md)** - Índice completo
+- **[design_system/ai-guide.md](./design_system/ai-guide.md)** - Guia para IA
+- **[design_system/quick-reference.md](./design_system/quick-reference.md)** - Referência rápida
+- **[design_system/components.md](./design_system/components.md)** - Componentes UI
+- **[TAMAGUI_SETUP.md](./TAMAGUI_SETUP.md)** - Temas claro/escuro
+- **[UI_IMPROVEMENTS.md](./UI_IMPROVEMENTS.md)** - Melhorias implementadas
 
-### 🚀 **Deploy e Infraestrutura**
-- **[DEPLOY_SETUP.md](./DEPLOY_SETUP.md)** - Configuração de deploy e ambiente
-- **[DEPLOY-PERMISSIONS.md](./DEPLOY-PERMISSIONS.md)** - Permissões necessárias para deploy
-- **[VERSIONAMENTO-QA.md](./VERSIONAMENTO-QA.md)** - Processo de versionamento e QA
+## 🌐 **Integração Backend**
+- **[IGNITER_INTEGRATION.md](./IGNITER_INTEGRATION.md)** - SSE + Tempo Real ✅
+- **[MCP-SETUP.md](./MCP-SETUP.md)** - MCP Server (Cursor IDE)
 
-### 🎨 **Interface e Temas**
-- **[TAMAGUI_SETUP.md](./TAMAGUI_SETUP.md)** - Configuração do sistema de temas claro/escuro
-- **[UI_IMPROVEMENTS.md](./UI_IMPROVEMENTS.md)** - Melhorias de interface implementadas
+## 🚀 **Deploy (GCP + GitHub Actions)**
+- **[VERSIONAMENTO-QA.md](./VERSIONAMENTO-QA.md)** - Versionamento automático
+- **[GITHUB_ACTIONS_SETUP.md](./GITHUB_ACTIONS_SETUP.md)** - CI/CD
+- **[DEPLOY_SETUP.md](./DEPLOY_SETUP.md)** - Cloud Run
+- **[DEPLOY_TROUBLESHOOTING.md](./DEPLOY_TROUBLESHOOTING.md)** - Troubleshooting
+- **[DEPLOY-PERMISSIONS.md](./DEPLOY-PERMISSIONS.md)** - IAM Permissions
 
-### ⚙️ **Configuração e Ambiente**
-- **[ENV_SETUP.md](./ENV_SETUP.md)** - Configuração de variáveis de ambiente
-- **[LOGIN_IMPLEMENTATION.md](./LOGIN_IMPLEMENTATION.md)** - Implementação do sistema de login
+## 🎯 **Início Rápido por Perfil**
 
-## 🔍 **Como Navegar**
+**Desenvolvedor Frontend:**
+1. [ENV_SETUP.md](./ENV_SETUP.md) → Configurar `.env`
+2. [design_system/ai-guide.md](./design_system/ai-guide.md) → Criar componentes
+3. [IGNITER_INTEGRATION.md](./IGNITER_INTEGRATION.md) → Endpoints SSE e tempo real
 
-1. **Para desenvolvedores**: Comece com `ENV_SETUP.md` e `TAMAGUI_SETUP.md`
-2. **Para DevOps**: Consulte `DEPLOY_SETUP.md` e `DEPLOY-PERMISSIONS.md`
-3. **Para QA**: Veja `VERSIONAMENTO-QA.md`
-4. **Para designers**: Consulte `UI_IMPROVEMENTS.md`
+**DevOps:**
+1. [DEPLOY_SETUP.md](./DEPLOY_SETUP.md) → Setup GCP
+2. [GITHUB_ACTIONS_SETUP.md](./GITHUB_ACTIONS_SETUP.md) → Setup CI/CD
+3. [DEPLOY-PERMISSIONS.md](./DEPLOY-PERMISSIONS.md) → Permissões
+
+**QA:**
+1. [VERSIONAMENTO-QA.md](./VERSIONAMENTO-QA.md) → Entender versionamento
 
 ## 📝 **Atualizações**
 
