@@ -20,11 +20,13 @@ export function useQueues() {
   const loadQueues = useCallback(async () => {
     if (!session?.user?.tenantId) return
 
+    const tenantId = session.user.tenantId
+
     setIsLoading(true)
     setError(null)
 
     try {
-      const data = await apiClient.getQueues(session.user.tenantId)
+      const data = await apiClient.getQueues(tenantId)
       setQueues(data)
     } catch (err) {
       console.error('Erro ao carregar filas:', err)
@@ -39,8 +41,10 @@ export function useQueues() {
     
     if (!confirm('Tem certeza que deseja excluir esta fila?')) return
 
+    const tenantId = session.user.tenantId
+
     try {
-      await apiClient.deleteQueue(session.user.tenantId, queueId)
+      await apiClient.deleteQueue(tenantId, queueId)
       await loadQueues()
     } catch (err) {
       console.error('Erro ao excluir fila:', err)
@@ -57,7 +61,7 @@ export function useQueues() {
     if (session?.user?.tenantId) {
       loadQueues()
     }
-  }, [session, loadQueues])
+  }, [session?.user?.tenantId, loadQueues])
 
   // Estatísticas das filas
   const stats = {
