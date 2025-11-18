@@ -29,7 +29,6 @@ interface IgniterStore {
   
   // Estados de controle
   isConnecting: boolean;
-  connectionTimeout: ReturnType<typeof setTimeout> | null;
   
   // Ações de conexão principal
   setConnected: (connected: boolean) => void;
@@ -73,7 +72,6 @@ export const useIgniterStore = createWithEqualityFn<IgniterStore>()(
     sseEnabled: false,
     mainEventSource: null,
     isConnecting: false,
-    connectionTimeout: null,
 
     // === AÇÕES DE CONEXÃO PRINCIPAL ===
     setConnected: (connected) => set({ isConnected: connected }),
@@ -145,11 +143,7 @@ export const useIgniterStore = createWithEqualityFn<IgniterStore>()(
     },
 
     disconnectFromMainSSE: () => {
-      const { mainEventSource, connectionTimeout } = get();
-      
-      if (connectionTimeout) {
-        clearTimeout(connectionTimeout as ReturnType<typeof setTimeout>);
-      }
+      const { mainEventSource } = get();
 
       if (mainEventSource) {
         mainEventSource.close();
@@ -159,8 +153,7 @@ export const useIgniterStore = createWithEqualityFn<IgniterStore>()(
       set({ 
         mainEventSource: null, 
         isConnected: false, 
-        isConnecting: false,
-        connectionTimeout: null 
+        isConnecting: false
       });
     },
 
@@ -376,9 +369,6 @@ export const useIgniterStore = createWithEqualityFn<IgniterStore>()(
         // Limpar conexão principal
         if (state.mainEventSource) {
           state.mainEventSource.close();
-        }
-        if (state.connectionTimeout) {
-          clearTimeout(state.connectionTimeout as ReturnType<typeof setTimeout>);
         }
 
         // Limpar conexões de fila
