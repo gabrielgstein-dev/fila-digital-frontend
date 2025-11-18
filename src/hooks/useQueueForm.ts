@@ -94,7 +94,6 @@ export function useQueueForm() {
     setIsLoading(true)
     setError(null)
 
-    debugger;
     const payload: CreateQueueDto = {
       name: cleanedData.name,
       description: cleanedData.description || undefined,
@@ -106,8 +105,10 @@ export function useQueueForm() {
 
     console.log('📤 Enviando payload para API:', payload)
 
+    const tenantId = session.user.tenantId
+
     try {
-      const result = await apiClient.createQueue(session.user.tenantId, payload)
+      const result = await apiClient.createQueue(tenantId, payload)
       console.log('✅ Fila criada com sucesso:', result)
 
       setSuccess(true)
