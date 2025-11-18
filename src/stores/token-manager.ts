@@ -151,7 +151,7 @@ export const useTokenManagerStore = createWithEqualityFn<TokenManagerStore>()(
       
       // Limpar intervalo anterior se existir
       if (intervalId) {
-        clearInterval(intervalId);
+        clearInterval(intervalId as ReturnType<typeof setInterval>);
       }
 
       if (sessionStatus === 'authenticated') {
@@ -171,7 +171,7 @@ export const useTokenManagerStore = createWithEqualityFn<TokenManagerStore>()(
       const { intervalId, autoRefreshTimer } = get();
       
       if (intervalId) {
-        clearInterval(intervalId);
+        clearInterval(intervalId as ReturnType<typeof setInterval>);
         set({ intervalId: null });
       }
 

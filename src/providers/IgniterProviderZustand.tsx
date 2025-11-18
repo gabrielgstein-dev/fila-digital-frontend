@@ -37,7 +37,7 @@ export function IgniterProvider({ children }: IgniterProviderProps) {
       
       if (token) {
         console.log('🔐 Iniciando conexão SSE com Zustand');
-        connectToMainSSE(user);
+        connectToMainSSE();
       } else {
         console.warn('⚠️ Token não disponível para conexão SSE');
       }
@@ -79,11 +79,12 @@ function IgniterDevControls() {
     setSseEnabled, 
     isConnected, 
     connectionError, 
-    activeConnections,
+    getActiveConnectionsCount,
     clearAllConnections,
-    connectToMainSSE,
-    disconnectFromMainSSE 
+    connectToMainSSE
   } = useIgniterStore();
+  
+  const activeConnections = getActiveConnectionsCount();
   
   const { data: session, status } = useSession();
 
@@ -93,8 +94,7 @@ function IgniterDevControls() {
 
   const handleReconnect = () => {
     if (status === 'authenticated' && session?.user) {
-      const user = session.user as UserWithToken;
-      connectToMainSSE(user);
+      connectToMainSSE();
     }
   };
 

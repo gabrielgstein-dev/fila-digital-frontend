@@ -26,7 +26,7 @@ export function IgniterDevControls() {
 
   const handleReconnect = () => {
     if (isAuthenticated && token) {
-      connectToMainSSE(token);
+      connectToMainSSE();
     }
   };
 

@@ -2,9 +2,7 @@ import { createWithEqualityFn } from 'zustand/traditional';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { 
   IgniterNotification, 
-  QueueConnection, 
-  IgniterEventData,
-  UserWithToken 
+  QueueConnection
 } from '@/types/igniter';
 import { 
   generateNotificationId,
@@ -37,7 +35,7 @@ interface IgniterStore {
   setConnected: (connected: boolean) => void;
   setConnectionError: (error: string | null) => void;
   setSseEnabled: (enabled: boolean) => void;
-  connectToMainSSE: (user: UserWithToken) => void;
+  connectToMainSSE: () => void;
   disconnectFromMainSSE: () => void;
   
   // Ações de notificações
@@ -52,7 +50,7 @@ interface IgniterStore {
   notifySubscribers: (eventType: string, data: unknown) => void;
   
   // Ações de filas
-  connectToQueue: (queueId: string, token: string) => () => void;
+  connectToQueue: (queueId: string) => () => void;
   disconnectFromQueue: (queueId: string) => void;
   clearAllConnections: () => void;
   
@@ -82,7 +80,7 @@ export const useIgniterStore = createWithEqualityFn<IgniterStore>()(
     setConnectionError: (error) => set({ connectionError: error }),
     setSseEnabled: (enabled) => set({ sseEnabled: enabled }),
 
-    connectToMainSSE: (user) => {
+    connectToMainSSE: () => {
       const { isConnecting, mainEventSource } = get();
       
       if (isConnecting || (mainEventSource && mainEventSource.readyState === EventSource.OPEN)) {
@@ -150,7 +148,7 @@ export const useIgniterStore = createWithEqualityFn<IgniterStore>()(
       const { mainEventSource, connectionTimeout } = get();
       
       if (connectionTimeout) {
-        clearTimeout(connectionTimeout);
+        clearTimeout(connectionTimeout as ReturnType<typeof setTimeout>);
       }
 
       if (mainEventSource) {
@@ -234,7 +232,7 @@ export const useIgniterStore = createWithEqualityFn<IgniterStore>()(
     },
 
     // === AÇÕES DE FILAS ===
-    connectToQueue: (queueId, token) => {
+    connectToQueue: (queueId) => {
       if (!queueId) {
         logSSEEvent('error', `parâmetros inválidos para fila ${queueId}`);
         return () => {};
@@ -380,7 +378,7 @@ export const useIgniterStore = createWithEqualityFn<IgniterStore>()(
           state.mainEventSource.close();
         }
         if (state.connectionTimeout) {
-          clearTimeout(state.connectionTimeout);
+          clearTimeout(state.connectionTimeout as ReturnType<typeof setTimeout>);
         }
 
         // Limpar conexões de fila
@@ -491,7 +489,7 @@ export const useIgniterNotificationsByType = (type: string) => useIgniterStore(
 export const useIgniterQueue = (queueId: string) => useIgniterStore(
   (state) => ({ 
     ...state.getQueueConnectionStatus(queueId),
-    connectToQueue: (token: string) => state.connectToQueue(queueId, token),
+    connectToQueue: () => state.connectToQueue(queueId),
     disconnectFromQueue: () => state.disconnectFromQueue(queueId)
   }),
   (a, b) => a.isConnected === b.isConnected && a.isReconnecting === b.isReconnecting

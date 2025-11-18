@@ -30,7 +30,7 @@ export function useIgniterSession() {
       
       if (token) {
         console.log('🔐 Iniciando conexão SSE com Zustand (sem provider!)');
-        connectToMainSSE(token);
+        connectToMainSSE();
       } else {
         console.warn('⚠️ Token não disponível para conexão SSE');
       }
