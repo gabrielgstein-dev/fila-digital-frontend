@@ -92,12 +92,15 @@ export default function QueueDetailsPage() {
   const fetchQueueData = useCallback(async () => {
     if (!session?.user?.tenantId || !params.id) return
 
+    const tenantId = session.user.tenantId
+    const queueId = params.id as string
+
     try {
       setLoading(true)
       setError(null)
 
       // Buscar dados da fila
-      const queueData = await apiClient.getQueue(session.user.tenantId, params.id as string)
+      const queueData = await apiClient.getQueue(tenantId, queueId)
       setQueue(queueData)
 
       // Se a fila tem tickets, usar os dados reais
@@ -107,7 +110,7 @@ export default function QueueDetailsPage() {
 
       // Buscar estatísticas da fila - todos os dados vêm do backend
       try {
-        const stats = await apiClient.getQueueStats(session.user.tenantId, params.id as string)
+        const stats = await apiClient.getQueueStats(tenantId, queueId)
         setQueueStats(stats)
 
         // Usar dados do backend diretamente, sem cálculos
@@ -173,11 +176,13 @@ export default function QueueDetailsPage() {
   const handleCallNext = async () => {
     if (!session?.user?.tenantId || !queue?.id || callingNext) return
 
+    const tenantId = session.user.tenantId
+
     try {
       setCallingNext(true)
       setError(null)
 
-      const calledTicket = await apiClient.callNext(session.user.tenantId, queue.id)
+      const calledTicket = await apiClient.callNext(tenantId, queue.id)
 
       console.log('✅ Próxima senha chamada:', calledTicket)
 
