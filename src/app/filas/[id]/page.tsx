@@ -136,7 +136,7 @@ export default function QueueDetailsPage() {
     } finally {
       setLoading(false)
     }
-  }, [session?.user?.tenantId, params.id])
+  }, [session?.user?.tenantId, params.id, queueState])
 
   // Effect para carregar dados
   useEffect(() => {
@@ -348,7 +348,11 @@ export default function QueueDetailsPage() {
           )}
 
           {activeTab === 'tickets' && (
-            <TicketsTab tickets={tickets} />
+            <TicketsTab
+              tickets={tickets}
+              queueId={queue.id}
+              onTicketAdded={fetchQueueData}
+            />
           )}
 
           {activeTab === 'maintenance' && (

@@ -1,4 +1,5 @@
 // Exportações centralizadas dos componentes UI
+export { AddTicketModal } from './AddTicketModal'
 export { PageHeader } from './PageHeader'
 export { SearchAndFilters, QueueSearchAndFilters } from './SearchAndFilters'
 export { StatsCards, StatCard } from './StatsCards'
