@@ -13,6 +13,7 @@ import {
   IgniterSessionInfo,
   IgniterTokenStatus,
   IgniterRefreshTokenResponse,
+  PublicTicketStatus,
 } from '@/types';
 import { env } from '@/config/env';
 import { igniterClient } from '@/lib/igniter-client';
@@ -192,6 +193,10 @@ class ApiClient {
     return this.request<Ticket>(`/tickets/${ticketId}/complete`, {
       method: 'PUT',
     });
+  }
+
+  async getPublicTicketStatus(guestToken: string): Promise<PublicTicketStatus> {
+    return this.request<PublicTicketStatus>(`/tickets/public/${guestToken}`);
   }
 
   async getQueueStats(tenantId: string, queueId: string): Promise<QueueStats> {

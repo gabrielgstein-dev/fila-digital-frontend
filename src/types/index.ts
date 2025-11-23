@@ -238,6 +238,14 @@ export interface ApiResponse<T = unknown> {
   success: boolean;
 }
 
+export interface PublicTicketStatus {
+  status: TicketStatus;
+  queueName: string;
+  myCallingToken: string;
+  position: number | null;
+  estimatedWaitTime: number | null;
+}
+
 export interface NextAuthUser {
   id: string;
   email: string;

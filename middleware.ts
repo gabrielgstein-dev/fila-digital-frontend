@@ -18,6 +18,10 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl
         
+        if (pathname.startsWith('/status')) {
+          return true
+        }
+        
         if (pathname === '/login') {
           return true
         }
