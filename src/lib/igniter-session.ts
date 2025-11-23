@@ -40,7 +40,7 @@ export function useIgniterSession() {
       console.log('🚪 Usuário deslogado, limpando conexões SSE');
       clearAllConnections();
     }
-  }, [status, session?.user, sseEnabled]);
+  }, [status, session?.user, sseEnabled, clearAllConnections, connectToMainSSE, isConnecting, mainEventSource]);
 
   // Cleanup ao desmontar ou quando status mudar para unauthenticated
   useEffect(() => {

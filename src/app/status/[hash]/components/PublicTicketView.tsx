@@ -63,7 +63,7 @@ export function TicketStatusView({ guestToken, initialStatus }: TicketStatusView
         try {
           const updated = await apiClient.getPublicTicketStatus(guestToken)
           setStatus(updated)
-        } catch (error) {
+        } catch {
           setRefreshError('Não foi possível atualizar. Tente novamente.')
         } finally {
           schedule()
@@ -86,7 +86,7 @@ export function TicketStatusView({ guestToken, initialStatus }: TicketStatusView
       setRefreshError(null)
       const updated = await apiClient.getPublicTicketStatus(guestToken)
       setStatus(updated)
-    } catch (error) {
+    } catch {
       setRefreshError('Não foi possível atualizar. Tente novamente.')
     } finally {
       setIsRefreshing(false)
