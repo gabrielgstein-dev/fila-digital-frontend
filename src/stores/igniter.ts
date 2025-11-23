@@ -409,18 +409,6 @@ export const useIgniterNotifications = () => useIgniterStore(
   })
 );
 
-export const useIgniterControl = () => useIgniterStore(
-  (state) => ({
-    sseEnabled: state.sseEnabled,
-    setSseEnabled: state.setSseEnabled,
-    activeConnections: Array.from(state.queueConnections.values())
-      .filter(conn => conn.eventSource.readyState === EventSource.OPEN).length,
-    clearAllConnections: state.clearAllConnections,
-    connectToMainSSE: state.connectToMainSSE,
-    disconnectFromMainSSE: state.disconnectFromMainSSE
-  })
-);
-
 export const useQueueUpdates = (queueId?: string) => {
   const notifications = useIgniterStore(state => state.notifications);
   

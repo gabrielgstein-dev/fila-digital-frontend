@@ -485,35 +485,6 @@ export const useIgniterQueue = (queueId: string) => useIgniterStore(
   (a, b) => a.isConnected === b.isConnected && a.isReconnecting === b.isReconnecting
 );
 
-// Hook para controle SSE - desenvolvimento
-export const useIgniterControl = () => useIgniterStore(
-  (state) => ({
-    sseEnabled: state.sseEnabled,
-    setSseEnabled: state.setSseEnabled,
-    activeConnections: state.getActiveConnectionsCount(),
-    clearAllConnections: state.clearAllConnections,
-    connectToMainSSE: state.connectToMainSSE,
-    disconnectFromMainSSE: state.disconnectFromMainSSE
-  }),
-  (a, b) => a.sseEnabled === b.sseEnabled && a.activeConnections === b.activeConnections
-);
-
-// Hook para estatísticas gerais
-export const useIgniterStats = () => useIgniterStore(
-  (state) => ({
-    totalNotifications: state.notifications.length,
-    unreadCount: state.getUnreadCount(),
-    activeConnections: state.getActiveConnectionsCount(),
-    isConnected: state.isConnected,
-    connectionError: state.connectionError
-  }),
-  (a, b) => 
-    a.totalNotifications === b.totalNotifications &&
-    a.unreadCount === b.unreadCount &&
-    a.activeConnections === b.activeConnections &&
-    a.isConnected === b.isConnected &&
-    a.connectionError === b.connectionError
-);
 
 // === HOOKS COMPOSTOS PARA CASOS DE USO ESPECÍFICOS ===
 
